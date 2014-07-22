@@ -50,7 +50,7 @@
           $%  [%cash p=@p q=buck]                       ::
               [%make p=(unit ,@t) q=@ud r=@ s=?]        ::
               [%sith p=@p q=@uw r=?]                    ::
-              [%want p=sock q=path r=*]                 ::
+              [%wont p=sock q=path r=*]                 ::
           ==  ==                                        ::
               $:  %b                                    ::
           $%  [%hail ~]                                 ::  to %batz
@@ -924,8 +924,8 @@
             %sp  !!
             %sq  =+  tea=(bist %ma r.gud)
                  %+  gram  ~
-                 [%pass tea %a [%want [who p.gud] [%q q.gud %b tea] s.gud]]
-            %sr  (gram ~ %pass ~ %a [%want [who p.gud] [%r q.gud] r.gud])
+                 [%pass tea %a [%wont [who p.gud] [%q q.gud %b tea] s.gud]]
+            %sr  (gram ~ %pass ~ %a [%wont [who p.gud] [%r q.gud] r.gud])
             %te  (gram ~ %give %tell p.gud)
             %th  (gram ~ %pass ~ %e %that p.gud q.gud)
             %tq  =+  tea=(bist %ma p.gud)

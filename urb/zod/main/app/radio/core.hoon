@@ -16,6 +16,7 @@
     ++  gift
       $%  [%rush blitz]
           [%rust iron]
+          [%mean p=ares]
           [%nice ~]
       ==
     ++  mess                                            ::  message
@@ -109,7 +110,7 @@
       (send (welp p.zig /amigos) %give %rush %user %out p.p (ident p.p))
     =.  p.vat  (~(put by p.vat) p.zig [p.ya (~(put by q.ya) you [& lat.hid])])
     :_  +>.$
-    :-  [ost %give %nice ~]
+    :-  [ost %give %mean ~]
     =+  yel=(~(get by q.ya) you)
     ?.  |(?=(~ yel) !liv.u.yel)  outs
     %+  welp  outs

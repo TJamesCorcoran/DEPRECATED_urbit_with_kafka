@@ -30,6 +30,7 @@
               [%sith p=@p q=@uw r=?]                    ::  imperial generator
               [%wake ~]                                 ::  timer activate
               [%want p=sock q=path r=*]                 ::  send message
+              [%wont p=sock q=path r=*]                 ::  send e2e message
           ==                                            ::
 ++  move  ,[p=duct q=(mold note gift)]                  ::  local move
 ++  note                                                ::  out request $->
@@ -52,9 +53,12 @@
           $?  $:  %a                                    ::  from %ames
                   $%  [%went p=ship q=cape]             ::
               ==  ==                                    ::
+              $:  %g                                    ::
+                  $%  [%mean p=ares]                    ::
+                      [%nice ~]                         ::
+              ==  ==                                    ::
               $:  @tas                                  ::
                   $%  [%crud p=@tas q=(list tank)]      ::  by any
-                      [%went p=ship q=cape]             ::  by %ames
           ==  ==  ==                                    ::
 --
   ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1088,6 +1092,14 @@
       =^  biz  fox  $(aks t.aks)
       [(weld p.buz p.biz) fox]
     ::
+    ++  rack                                            ::    rack:am
+      |=  [soq=sock num=@ud pax=path are=ares]          ::  e2e ack
+      (cack:(ho:(um p.soq) q.soq) %dead num pax)
+    ::
+    ++  ruck                                            ::    rack:am
+      |=  [soq=sock num=@ud pax=path]                   ::  e2e ack
+      (cack:(ho:(um p.soq) q.soq) %good num pax)
+    ::
     ++  wake                                            ::    wake:am
       |=  hen=duct                                      ::  harvest packets
       ^-  [p=(list boon) q=fort]
@@ -1104,6 +1116,11 @@
       |=  [soq=sock sup=soap ham=meal]                  ::  dispatch and send
       ^-  [p=(list boon) q=fort]
       zork:zank:(wind:(ho:(um p.soq) q.soq) [q.sup r.sup] ham)
+    ::
+    ++  wice                                            ::    wice:am  
+      |=  [soq=sock hen=duct cha=path val=*]             ::  send a statement
+      ^-  [p=(list boon) q=fort]
+      zork:zank:(wale:(ho:(um p.soq) q.soq) hen cha val)
     ::
     ++  wise                                            ::    wise:am
       |=  [soq=sock hen=duct cha=path val=*]             ::  send a statement
@@ -1133,6 +1150,15 @@
             ?~  pax  bin
             $(pax t.pax, bin (weld (flop (wist:diz now waz ~ i.pax)) bin))
           ==
+        ::
+        ++  cack
+          |=  [kay=cape num=@ud pax=path]
+          ^+  +>
+          =+  raz=(need (~(get by raz.bah) pax))
+          =+  ^-  [ryn=lane dam=flap]
+              (need (~(get by out.raz) num))
+          =^  roc  diz  (zuul:diz now [%back kay dam ~s0])
+          (busk(diz (wast:diz ryn)) xong:diz roc)
         ::
         ++  done                                        ::    done:ho:um:am
           |=  [cha=path num=@ud]                        ::  complete outgoing
@@ -1232,6 +1258,30 @@
             =^  pax  diz  (zuul:diz now [%back kay dam ~s0])
             +(+> (busk(diz (wast:diz ryn)) xong:diz pax))
           ::
+          ++  coat                                      ::    coat:la:ho:um:am
+            |=  [cha=path rum=race]                     ::  update input race
+            ^+  +>
+            ~&  [%coat cha]
+            =+  cun=(~(get by mis.rum) did.rum)
+            ?~  cun
+              ~&  %coat-sig
+              +>.$(raz.bah (~(put by raz.bah) cha rum))
+            ~&  %coat-nosig
+            =.  +>.$  ?.  =(%good p.u.cun)  +>.$        ::  XX e2e change?
+                      ~&  %coat-good
+                      ?>  ?=(^ r.u.cun)
+                      %-  emit
+                      ^-  boon
+                      :^    %mulk
+                          [our her]
+                        `soap`[[p:sen:gus clon:diz] cha did.rum]
+                      u.r.u.cun
+            %=  $
+              mis.rum  (~(del by mis.rum) did.rum)
+              did.rum  +(did.rum)
+              out.rum  (~(put by out.rum) did.rum [ryn dam])
+            ==
+          ::
           ++  coot                                      ::    coot:la:ho:um:am
             |=  [cha=path rum=race]                     ::  update input race
             ^+  +>
@@ -1262,6 +1312,17 @@
               cock                                      ::  always ack a dup
             (coot cha rum(mis (~(put by mis.rum) num [kay dam dut])))
           ::
+          ++  deer                                      ::    deer:la:ho:um:am
+            |=  [cha=path num=@ud dut=(unit)]           ::  interpret message
+            ^+  +>
+            =+  ^=  rum  ^-  race
+                =+  rum=(~(get by raz.bah) cha)
+                ?~(rum *race u.rum)
+            ?.  (gte num did.rum)
+              ?.  (~(has by bum.rum) num)  cock         ::  always ack a dup
+              cock(kay %dead)
+            (coat cha rum(mis (~(put by mis.rum) num [kay dam dut])))
+          ::
           ++  dine                                      ::    dine:la:ho:um:am
             |=  fud=meal                                ::  interpret meal
             ^+  +>
@@ -1274,6 +1335,11 @@
               ::  ~&  [%bond q.fud r.fud]
               ?>  =(p:sen:gus p.fud)
               (dear q.fud r.fud ?-(kay %dead ~, %good [~ s.fud]))
+            ::
+                %bund
+              ~&  [%bund q.fud r.fud]
+              ?>  =(p:sen:gus p.fud)
+              (deer q.fud r.fud ?-(kay %dead ~, %good [~ s.fud]))
             ::
                 %carp
               =+  zol=(~(get by olz.weg) s.fud)
@@ -1379,6 +1445,20 @@
               `boon`[%coke [our her] [[p:sen:gus clon:diz] u.p.yoh] kay u.hud]
             ==
           (busk xong:diz q.yoh)
+        ::
+        ++  wale                                        ::    wool:ho:um:am
+          |=  [hen=duct cha=path val=*]                 ::  send a statement
+          ^+  +>
+          =+  ^=  rol  ^-  rill
+              =+  rol=(~(get by ryl.bah) cha)
+              ?~(rol *rill u.rol)
+          =+  sex=sed.rol
+          ::  ~&  [%tx [our her] cha sex]
+          =.  ryl.bah
+              %+  ~(put by ryl.bah)  cha
+              rol(sed +(sed.rol), san (~(put by san.rol) sex hen))
+          =+  cov=[p=p:sen:gus q=clon:diz]
+          (wind [cha sex] [%bund q.cov cha sex val])
         ::
         ++  wind                                        ::    wind:ho:um:am
           |=  [gom=soup ham=meal]
@@ -1659,6 +1739,31 @@
         [%pass ~ %a %want [p.p.bon him] /q/yu [q.p.bon r.bon]]
       ==
     ::
+        %mulk
+      ~&  [%mulk p.bon q.bon]
+      ?>  ?=([@ *] q.q.bon)
+      ?>  ?=(%q i.q.q.bon)
+      ?>  ?=([@ *] t.q.q.bon)
+      ?+    i.t.q.q.bon
+        ~&  %mulk-bad
+        :_  fox
+        :~  :-  (claw p.p.bon)
+            [%sick %wart p.bon i.t.q.q.bon t.t.q.q.bon r.bon]
+        ==
+      ::
+          %ge                                           ::  gall request
+        ?>  ?=([@ ~] t.t.q.q.bon)
+        =+  app=`term`(need ((sand %tas) i.t.t.q.q.bon))
+        =+  ^=  pax
+            [(scot %p p.p.bon) (scot %p q.p.bon) (scot %ud r.q.bon) q.q.bon]
+        :_(fox [hen %pass `path`pax %g %rote p.bon app r.bon]~)
+      ::
+          %gh                                           ::  gall response
+        ?>  ?=([@ ~] t.t.q.q.bon)
+        =+  app=`term`(need ((sand %tas) i.t.t.q.q.bon))
+        :_(fox [hen %pass ~ %g %roth p.bon app r.bon]~)
+      ==
+    ::
         %ouzo
       ::  ~&  [%send now p.bon `@p`(mug (shaf %flap q.bon))] 
       :_  fox
@@ -1684,8 +1789,38 @@
     |=  [tea=wire hen=duct sih=sign]
     ^-  [(list move) _+>]
     ?-  +<.sih
-      %crud  [[[hen [%slip %d %flog +.sih]] ~] +>]
-      %went  [~ +>]
+        %crud
+      [[[hen [%slip %d %flog +.sih]] ~] +>]
+        ?(%mean %nice)
+      ?>  ?=(^ tea)
+      ?>  ?=(^ t.tea)
+      ?>  ?=(^ t.t.tea)
+      =+  ^=  fuy
+          =<  zork  =<  zank
+          ?-  +<.sih
+              %mean
+            %^    ~(rack am [now fox])
+                [(slav %p i.tea) (slav %p i.t.tea)]
+              (slav %ud i.t.t.tea)
+            :-  t.t.t.tea
+            p.+.sih
+              %nice
+            %^    ~(ruck am [now fox])
+                [(slav %p i.tea) (slav %p i.t.tea)]
+              (slav %ud i.t.t.tea)
+            t.t.t.tea
+          ==
+      =>  %_(. fox q.fuy)
+      =|  out=(list move)
+      |-  ^-  [p=(list move) q=_+>.^$]
+      ?~  p.fuy
+        [(flop out) +>.^$]
+      =^  toe  fox  (clop now hen i.p.fuy)
+      $(p.fuy t.p.fuy, out (weld (flop toe) out))
+        %nice
+      !!  ::  XX  ~(ruck am [now fox])
+        %went
+      [~ +>]
     ==
   ::
   ++  knob
@@ -1720,11 +1855,14 @@
             %sith
           (~(czar am [now fox]) p.kyz q.kyz r.kyz)
         ::
+            %wake
+          (~(wake am [now fox]) hen)
+        ::
             %want
           (~(wise am [now fox]) p.kyz hen q.kyz r.kyz)
         ::
-            %wake
-          (~(wake am [now fox]) hen)
+            %wont
+          (~(wice am [now fox]) p.kyz hen q.kyz r.kyz)
         ==
     =>  %_(. fox q.fuy)
     =|  out=(list move)

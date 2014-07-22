@@ -14,7 +14,7 @@
           $%  [%back p=?]                               ::  %mess ack good/bad
               [%crud p=@tas q=(list tank)]              ::  physical error
               [%dumb ~]                                 ::  close duct
-              [%mean p=(unit ,[p=term q=(list tank)])]  ::  message failure
+              [%mean p=ares]                            ::  message failure
               [%meta p=vase]                            ::  meta-gift
               [%nice ~]                                 ::  message success
           ==                                            ::
@@ -45,7 +45,7 @@
 ++  move  ,[p=duct q=(mold note gift)]                  ::  typed move
 ++  note                                                ::  out request $->
           $?  $:  %a                                    ::  to %ames
-          $%  [%want p=sock q=path r=*]                 ::
+          $%  [%wont p=sock q=path r=*]                 ::
           ==  ==                                        ::
               $:  %c                                    ::  to %clay
           $%  [%warp p=sock q=riff]                     ::
@@ -123,7 +123,7 @@
           ==  ==                                        ::
               $:  %g                                    ::  by %gall
           $%  [%dumb ~]                                 ::
-              [%mean p=(unit ,[p=term q=(list tank)])]  ::
+              [%mean p=ares]                            ::
               [%nice ~]                                 ::
               [%rush p=logo q=*]                        ::
               [%rust p=logo q=*]                        ::
@@ -311,7 +311,7 @@
       :~  :-  hen
           :+  %pass
             ~[%x -.roc (scot %p you) app (scot %p our) (scot %ud num)]
-          `note`[%a [%want [you our] [%q %ge app ~] [num roc]]]
+          `note`[%a [%wont [you our] [%q %ge app ~] [num roc]]]
       ==
   %=    ..^^$
       pol.all
@@ -350,14 +350,14 @@
           num=(slav %ud i.t.t.t.t.pax)
       ==
   :_  ..^$
-  =+  rod=|=(ron=roon `note`[%a %want [our you] /q/gh/[app] num ron])
+  =+  rod=|=(ron=roon `note`[%a %wont [our you] /q/gh/[app] num ron])
   ?+  -.pax  !!
     %m  ?:  ?=(%a -.sih)  ~
         :_  ~  :-  hen
-        :+  %pass  [%r pax]
-        ^-  note
         ?+    -.sih  ~&  [%gall-gave-m -.sih]  !!
             %f
+          :+  %pass  [%r pax]
+          ^-  note
           ?-  -.p.+.sih
             %&  [%g %mess [our app] you `cage`q.p.p.+.sih]
             %|  (rod %e ~ %ford-fail p.p.+.sih)
@@ -366,8 +366,8 @@
             %g
           ?-  -.+.sih
             %dumb  !!
-            %mean  (rod %e p.+.sih)
-            %nice  (rod %k ~)
+            %mean  [%give %mean p.+.sih]
+            %nice  [%give %nice ~]
             %rush  !!
             %rust  !!
           ==
@@ -873,7 +873,10 @@
           [%meta (spec (slot 15 caq))]
         ::
             [%give p=[p=@tas q=*]]
-          [%give (sumo (spec (slot 3 caq)))]
+          :-  %give
+          ?:  ?=(%mean p.p.q.caq)  [%mean (ares q.p.q.caq)]
+          ?:  ?=(%nice p.p.q.caq)  [%nice ~]
+          (sumo (spec (slot 3 caq)))
         ==
       ::
       ++  warm                                          ::  vase has arm
