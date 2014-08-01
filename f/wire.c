@@ -3,6 +3,8 @@
 ** This file is in the public domain.
 */
 #include "all.h"
+#include "v/sist.h"
+
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -107,25 +109,18 @@ u2_wr_init(c3_m   hip_m,
 static c3_i
 _wr_open(c3_c* cpu_c, c3_c* fil_c, c3_c* suf_c, c3_w len_w)
 {
-  c3_c ful_c[8193];
+  c3_c ful_c[2048];
   c3_i fid_i;
 
-  snprintf(ful_c, 8193, "%s", cpu_c);
-  mkdir(ful_c, 0700);
+  u2_sist_mkdir_chkpt_dir();
+  u2_sist_get_chkpt_filestr(fil_c, suf_c, ful_c,  2048);
 
-  snprintf(ful_c, 8193, "%s/.urb", cpu_c);
-  mkdir(ful_c, 0700);
-
-  snprintf(ful_c, 8193, "%s/.urb/chk", cpu_c);
-  mkdir(ful_c, 0700);
-
-  snprintf(ful_c, 8193, "%s/.urb/chk/%s.%s", cpu_c, fil_c, suf_c);
   fid_i = open(ful_c, O_RDWR | O_CREAT, 0666);
   if ( -1 == fid_i ) {
-    perror(ful_c); exit(1);
+    perror(ful_c); 
+    exit(1);
   }
-  if ( len_w &&
-       (-1 == ftruncate(fid_i, (len_w * (1 << (LoomPageWords + 2))))) )
+  if ( len_w && (-1 == ftruncate(fid_i, (len_w * (1 << (LoomPageWords + 2))))) )
   {
     perror(ful_c); exit(1);
   }

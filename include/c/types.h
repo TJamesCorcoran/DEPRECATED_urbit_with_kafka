@@ -10,7 +10,7 @@
       typedef int64_t c3_ds;
       typedef uint32_t c3_w;
       typedef int32_t c3_ws;
-      typedef uint16_t c3_s;
+      typedef uint16_t c3_s; 
       typedef int16_t c3_ss;
       typedef uint8_t c3_y;   // byte
       typedef int8_t c3_ys;   // signed byte

@@ -34,7 +34,8 @@ RM=rm -f
 CC=gcc
 CXX=g++
 CXXFLAGS=$(CFLAGS)
-CLD=g++ -O2 -g -L/usr/local/lib -L/opt/local/lib
+# NOTFORCHECKIN - restore to -O2
+CLD=g++ -O0 -g -L/usr/local/lib -L/opt/local/lib
 
 ifeq ($(OS),osx)
   CLDOSFLAGS=-bind_at_load
@@ -57,7 +58,8 @@ endif
 INCLUDE=include
 MDEFINES=-DU2_OS_$(OS) -DU2_OS_ENDIAN_$(ENDIAN) -D U2_LIB=\"$(LIB)\"
 
-CFLAGS= -O2 -g -msse3 -ffast-math \
+# NOTFORCHECKIN - restore -O2
+CFLAGS= -O0 -g -msse3 -ffast-math \
 	-funsigned-char \
 	-I/usr/local/include \
 	-I/opt/local/include \
@@ -68,6 +70,7 @@ CFLAGS= -O2 -g -msse3 -ffast-math \
 	-Ioutside/re2 \
 	-Ioutside/cre2/src/src \
 	-Ioutside/ed25519/src \
+	-Ioutside/librdkafka/src  \
 	$(DEFINES) \
 	$(MDEFINES)
 
@@ -267,6 +270,9 @@ BASE_OFILES=\
 CRE2_OFILES=\
        outside/cre2/src/src/cre2.o
 
+KAFKA_CLIENT_OFILES=\
+       outside/cre2/src/src/cre2.o
+
 OUT_OFILES=\
        outside/jhttp/http_parser.o
 
@@ -274,15 +280,17 @@ V_OFILES=\
        v/ames.o \
        v/batz.o \
        v/cttp.o \
+       v/egzh.o \
        v/http.o \
+       v/kafk.o \
        v/loop.o \
        v/main.o \
        v/raft.o \
        v/reck.o \
        v/save.o \
        v/sist.o \
-       v/time.o \
        v/term.o \
+       v/time.o \
        v/unix.o \
        v/walk.o
 
@@ -293,6 +301,8 @@ VERE_OFILES=\
        $(V_OFILES)
 
 LIBUV=outside/libuv/libuv.a
+
+LIBKAFKACLIENT=outside/librdkafka/src/librdkafka.a
 
 LIBRE2=outside/re2/obj/libre2.a
 
@@ -306,6 +316,10 @@ all: $(BIN)/vere
 
 $(LIBUV):
 	$(MAKE) -C outside/libuv libuv.a
+
+$(LIBKAFKACLIENT):
+	$(MAKE) -C outside/librdkafka 
+
 
 $(LIBRE2):
 	$(MAKE) -C outside/re2 obj/libre2.a
@@ -324,9 +338,9 @@ $(CRE2_OFILES): outside/cre2/src/src/cre2.cpp outside/cre2/src/src/cre2.h $(LIBR
 
 $(V_OFILES) f/loom.o f/trac.o: include/v/vere.h
 
-$(BIN)/vere: $(LIBCRE) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM)
+$(BIN)/vere: $(LIBCRE) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBKAFKACLIENT)
 	mkdir -p $(BIN)
-	$(CLD) $(CLDOSFLAGS) -o $(BIN)/vere $(VERE_OFILES) $(LIBUV) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBS)
+	$(CLD) $(CLDOSFLAGS) -o $(BIN)/vere $(VERE_OFILES) $(LIBUV) $(LIBKAFKACLIENT) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBS)
 
 tags:
 	ctags -R -f .tags --exclude=root
@@ -358,6 +372,7 @@ clean:
 
 distclean: clean
 	$(MAKE) -C outside/libuv clean
+	$(MAKE) -C outside/librdkafka clean
 	$(MAKE) -C outside/re2 clean
 	$(MAKE) -C outside/ed25519 clean
 	$(MAKE) -C outside/anachronism clean
