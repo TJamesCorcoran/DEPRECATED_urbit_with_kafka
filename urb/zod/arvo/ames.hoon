@@ -1,4 +1,4 @@
-::
+!:
 ::  ames (4a), networking
 ::
   |=  pit=vase
@@ -435,7 +435,7 @@
             vix=(bex +((cut 0 [25 2] mag)))             ::  width of sender
             tay=(cut 0 [27 5] mag)                      ::  message type
         ==
-    ?>  =(4 vez)
+    ?>  =(7 vez)
     ?>  =(chk (end 0 20 (mug bod)))
     :+  [(end 3 wix bod) (cut 3 [wix vix] bod)]
       (kins tay)
@@ -455,7 +455,7 @@
     =+  tay=(ksin q.kec)
     %+  mix
       %+  can  0
-      :~  [3 4]
+      :~  [3 7]
           [20 (mug bod)]
           [2 yax]
           [2 qax]
@@ -492,7 +492,7 @@
         +>.$(hoc.saf (~(put by hoc.saf) her [[~31337.1.1 ~ wil] ~ *clot]))
       ::
       ++  lax                                           ::    lax:as:go
-        |_  [her=ship dur=door]                         ::  per client
+        |_  [her=ship dur=dore]                         ::  per client
         ++  cluy                                        ::    cluy:lax:as:go
           ^-  [p=life q=gens r=acru]                    ::  client crypto
           ?~  lew.wod.dur  !!
@@ -683,19 +683,19 @@
           --                                            ::  --zuul:lax:as:go
         --                                              ::  --lax:as:go
       ::
-      ++  gur                                           ::  default door
+      ++  gur                                           ::  default dore
         |=  her=ship
-        ^-  door
+        ^-  dore
         =+  def=?.((lth her 256) ~ [~ %if ~2000.1.1 0 (mix her .0.0.1.0)])
         [[~2100.1.1 def ~] ~ *clot]
       ::
-      ++  myx                                           ::  door by ship
+      ++  myx                                           ::  dore by ship
         |=  her=ship
         ^+  lax
         =+  fod=(~(get by hoc.saf) her)
         ~(. lax [her ?~(fod (gur her) u.fod)])
       ::
-      ++  nux                                           ::  install door
+      ++  nux                                           ::  install dore
         |=  new=_lax
         ^+  +>
         +>(hoc.saf (~(put by hoc.saf) her.new dur.new))
@@ -1043,7 +1043,7 @@
     ++  gnaw                                            ::    gnaw:am
       |=  [kay=cape ryn=lane pac=rock]                  ::  process packet
       ^-  [p=(list boon) q=fort]
-      ?.  =(4 (end 0 3 pac))  [~ fox]
+      ?.  =(7 (end 0 3 pac))  [~ fox]
       =+  kec=(bite pac)
       ?:  (goop p.p.kec)  [~ fox]
       ?.  (~(has by urb.ton.fox) q.p.kec)
@@ -1533,7 +1533,7 @@
     ::
     ++  scry
       |=  [fur=(unit (set monk)) ren=@tas who=ship syd=desk lot=coin tyl=path]
-      ^-  (unit (unit (pair logo ,*)))
+      ^-  (unit (unit (pair mark ,*)))
       ?~  tyl  [~ ~]
       =+  hun=(slaw %p i.tyl)
       ?~  hun  [~ ~]
@@ -1660,6 +1660,7 @@
       ==
     ::
         %ouzo
+      ::  ~&  [%send now p.bon `@p`(mug (shaf %flap q.bon))] 
       :_  fox
       [[gad.fox [%give %send p.bon q.bon]] ~]
     ::
@@ -1774,6 +1775,10 @@
       ?~  gys  ~
       =+  zet=zest:(ho:(~(um am [now fox]) our) his)
       [~ ?:(=(%show i.tyl) >zet< zet)]
+    ?:  ?=([%pals ~] tyl)
+      ?.  =(our his)
+        ~
+      [~ pals:(~(um am [now fox]) our)]
     ?.  ?=([%life ~] tyl)
       =+  muc=$(tyl [%life ~])
       (perm our his ?~(muc 0 (,@ud u.muc)) tyl)

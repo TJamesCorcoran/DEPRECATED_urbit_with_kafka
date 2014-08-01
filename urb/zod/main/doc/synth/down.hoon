@@ -23,13 +23,13 @@
 --  
 ::::::  generator
 ::
+~&  [%choon-at %]
 %-  (fest /synth/doc %)
 |=  pic=epic
 =+  unt=|=(a=cord (biff (~(get by qix.pic) a) |=(b=cord (slaw %ud b))))
-~!  unt
 =+  moo=(both (unt %foo) (unt %bar))
-?~  moo  [%$ "Hello, world: usage: url?foo=x&bar=y"]
-:*  [%$ "Hello, "]
+?~  moo  [%$ "Hm, world: usage: url?foo=x&bar=y"]
+:*  [%$ "Hm, "]
     [%emph %$ "world"]
     [%$ ": {<-.u.moo>} plus {<+.u.moo>} is {<(add u.moo)>}."]
 ==

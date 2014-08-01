@@ -1,4 +1,4 @@
-::
+!:
 ::  dill (4d), terminal handling
 ::
 |=  pit=vase
@@ -51,6 +51,7 @@
               [%helo p=path q=prod]                     ::
               [%logo p=@]                               ::
               [%save p=path q=@]                        ::
+              [%sage p=path q=*]                        ::
               [%talk p=tank]                            ::
               [%tell p=(list ,@t)]                      ::
               [%text p=tape]                            ::
@@ -97,6 +98,7 @@
               [%hop p=@ud]                              ::  set cursor position
               [%lin p=(list ,@c)]                       ::  set current line
               [%mor ~]                                  ::  newline
+              [%sag p=path q=*]                         ::  save to jamfile
               [%sav p=path q=@]                         ::  save to file
           ==                                            ::
 ++  blot                                                ::  kill ring
@@ -296,6 +298,11 @@
       +>.$(mos :_(mos [hen %pass ~ %b +.sih]))
     ::
         %note  ?.(p.yar +>.$ (fume p.+.sih q.+.sih))    ::  debug message
+        %sage                                           ::  write a jamfile
+      %=  +>.$
+        mos  :_(mos [hen [%give %blit [%sag p.+.sih q.+.sih] ~]])
+      ==
+    ::
         %save                                           ::  write a file
       %=  +>.$
         mos  :_(mos [hen [%give %blit [%sav p.+.sih q.+.sih] ~]])
@@ -600,7 +607,7 @@
 ::
 ++  scry
   |=  [fur=(unit (set monk)) ren=@tas his=ship syd=desk lot=coin tyl=path]
-  ^-  (unit (unit (pair logo ,*)))
+  ^-  (unit (unit (pair mark ,*)))
   [~ ~ [%tank >dug<]]
 ::
 ++  stay  [%0 dug]

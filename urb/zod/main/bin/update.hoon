@@ -10,12 +10,15 @@
         |=  [gem=germ who=@p bos=@p est=time]
         |=  [der=dome owr=dome des=desk]
         ^-  gift
-        =+  sab=`saba`[bos des [0 let.der] (flop (turn hit.der |=(a=frog q.a)))]
+        =+  sab=`saba`[bos des [0 let.der] (flop (turn hit.der |=(a=frog q.a))) ang.der]
         =+  lum=(~(auld ze est owr) gem who des sab)
         ?~  lum
           ^-  gift
-          :+  %la  %leaf
-          "{(trip des)} failed to apply, please rerun with a merge option"
+          :^  %la  %rose  [": " "" ""]
+          :~  
+            leaf/"{(trip des)} failed to apply, please rerun with a merge option"
+            (skol -:!>(_germ))
+          ==
         ?~  u.lum
           `gift`[%la %leaf "{(trip des)} is up to date"]
         `gift`[%ok des u.u.lum]

@@ -548,7 +548,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
   }
 
   if ( red_i != ben_d ) {
-    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", red_i, (long int) ben_d));
+    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", red_i, ben_d));
     red_i = -1;
     goto fail;
   }
@@ -1442,7 +1442,7 @@ u2_raft_init()
   }
 }
 
-/* _raft_sure(): apply and save an input ovum and its result.  TJIC: this is where we transform the world
+/* _raft_sure(): apply and save an input ovum and its result.
 */
 static void
 _raft_sure(u2_reck* rec_u, u2_noun ovo, u2_noun vir, u2_noun cor)
@@ -1460,7 +1460,6 @@ _raft_sure(u2_reck* rec_u, u2_noun ovo, u2_noun vir, u2_noun cor)
     // * in either case: push side effects event into queue
     //
     if ( u2_no == u2_sing(cor, rec_u->roc) ) {
-
       rec_u->roe = u2nc(u2nc(vir, ovo), rec_u->roe);
 
       u2z(rec_u->roc);
@@ -1529,7 +1528,7 @@ _raft_lame(u2_reck* rec_u, u2_noun ovo, u2_noun why, u2_noun tan)
       u2_noun nog = u2_lo_soft(rec_u, 0, u2_reck_poke, u2k(vab));
 
       if ( u2_blip == u2h(nog) ) {
-        _raft_sure_guard(rec_u, vab, u2k(u2h(u2t(nog))), u2k(u2t(u2t(nog))), c3_false);
+        _raft_sure_guard(rec_u, vab, u2k(u2h(u2t(nog))), u2k(u2t(u2t(nog))));
         u2z(nog);
       }
       else {
@@ -1621,7 +1620,7 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
       cor = u2k(u2t(u2t(nug)));
 
       u2z(nug);
-      _raft_sure_guard(rec_u, ovo, vir, cor, c3_false);
+      _raft_sure_guard(rec_u, ovo, vir, cor);
     }
   }
   //  uL(fprintf(uH, "punk oot %s\n", txt_c));
@@ -1639,7 +1638,7 @@ _raft_comm(u2_reck* rec_u, c3_d bid_d)
   egg_u = rec_u->ova.egg_u;
   while ( egg_u ) {
     if ( egg_u->ent_d <= bid_d ) {
-      egg_u->log = u2_yes;
+      egg_u->cit = u2_yes;
     } else break;
     egg_u = egg_u->nex_u;
   }
@@ -1694,7 +1693,7 @@ u2_raft_work(u2_reck* rec_u)
     u2_noun  vir;
     u2_noun  nex;
 
-    //  delete finished events
+    //  Delete finished events.
     //
     while ( rec_u->ova.egg_u ) {
 
@@ -1718,8 +1717,8 @@ u2_raft_work(u2_reck* rec_u)
       else break;
     }
 
-    //  Poke pending events, leaving the poked events and errors on rec_u->roe.  
-    //  TJIC:  (send to arvo)  _raft_punk does not return ; Arvo returns ync
+    //  Poke pending events, leaving the poked events and errors on rec_u->roe.
+    //
     {
       if ( 0 == u2R->lug_u.len_d ) {
         return;

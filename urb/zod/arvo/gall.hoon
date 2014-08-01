@@ -14,8 +14,7 @@
           $%  [%back p=?]                               ::  %mess ack good/bad
               [%crud p=@tas q=(list tank)]              ::  physical error
               [%dumb ~]                                 ::  close duct
-              [%lean ~]                                 ::  subscription done
-              [%mean p=(list tank)]                     ::  message failure
+              [%mean p=(unit ,[p=term q=(list tank)])]  ::  message failure
               [%meta p=vase]                            ::  meta-gift
               [%nice ~]                                 ::  message success
           ==                                            ::
@@ -28,6 +27,7 @@
               [%nuke p=hasp q=ship]                     ::  clear duct
               [%rote p=sack q=term r=*]                 ::  remote request
               [%roth p=sack q=term r=*]                 ::  remote response
+              [%wipe p=hasp]                            ::  forget app
           ==                                            ::
 ++  knob                                                ::  pending action
           $%  [%boot ~]                                 ::  begin boot
@@ -79,14 +79,13 @@
               r=(map bone duct)                         ::  by bone
           ==                                            ::
 ++  roon                                                ::  foreign response
-          $%  [%d p=logo q=*]                           ::  diff
-              [%e p=(list tank)]                        ::  error
-              [%f p=logo q=*]                           ::  full refresh
+          $%  [%d p=mark q=*]                           ::  diff
+              [%e p=(unit ,[p=term q=(list tank)])]     ::  error
+              [%f p=mark q=*]                           ::  full refresh
               [%k ~]                                    ::  message response
-              [%n ~]                                    ::  cancel subscription
           ==                                            ::
 ++  rook                                                ::  foreign request
-          $%  [%m p=logo q=*]                           ::  message
+          $%  [%m p=mark q=*]                           ::  message
               [%s p=path]                               ::  subscribe
               [%u ~]                                    ::  cancel/unsubscribe
           ==                                            ::
@@ -106,18 +105,30 @@
               ped=(set (pair ship desk))                ::  active depends
               zam=scar                                  ::  opaque ducts
           ==                                            ::
+++  silk                                                ::  see %ford
+          $&  [p=silk q=silk]                           ::
+          $%  [%boil p=mark q=beam r=path]              ::
+              [%call p=silk q=silk]                     ::
+              [%done p=(set beam) q=cage]               ::
+              [%mute p=silk q=(list (pair wing silk))]  ::
+              [%ride p=twig q=silk]                     ::
+              [%vale p=mark q=ship r=*]                 ::
+          ==                                            ::
+++  sill                                                ::  see %ford
+          $%  [%dirt p=twig]                            ::
+          ==                                            ::
 ++  sign                                                ::  in result $<-
           $?  [?(%b %c %d %e) @tas *]                   ::
               $:  %a                                    ::  by %ames
           $%  [%went p=ship q=cape]                     ::
           ==  ==                                        ::
               $:  %g                                    ::  by %gall
-          $%  [%dumb ~]                                 ::
-              [%lean ~]                                 ::  cancel subscription
-              [%mean p=(list tank)]                     ::  message failure
-              [%nice ~]                                 ::  message success
-              [%rush p=logo q=*]                        ::
-              [%rust p=logo q=*]                        ::
+          $%  [%crud p=@tas q=(list tank)]              ::
+              [%dumb ~]                                 ::
+              [%mean p=(unit ,[p=term q=(list tank)])]  ::
+              [%nice ~]                                 ::
+              [%rush p=mark q=*]                        ::
+              [%rust p=mark q=*]                        ::
           ==  ==                                        ::
               $:  %f                                    ::  by %ford
           $%  [%made p=(each bead (list tank))]         ::
@@ -194,6 +205,11 @@
         (gawk hen p.q.hic q.q.hic ((hard ,[@ud rook]) r.q.hic))
       ?:  ?=(%roth -.q.hic)
         (gawd hen p.q.hic q.q.hic ((hard ,[@ud roon]) r.q.hic))
+      ?:  ?=(%wipe -.q.hic)
+        =+  mat=(~(got by pol.all) p.p.q.hic)
+        =.  bum.mat  (~(del by bum.mat) q.p.q.hic)
+        =.  pol.all  (~(put by pol.all) p.p.q.hic mat)
+        [p=~ q=..^$]
       |-  ^-  [p=(list move) q=_..^^$]
       =+  =|  law=(unit cuff)
           |-  ^-  $:  law=(unit cuff)
@@ -211,6 +227,8 @@
     ++  take                                            ::  accept response
       |=  [pax=path hen=duct hin=(hypo sign)]           ::
       ^-  [p=(list move) q=_..^$]
+      ?:  ?=(%crud +<.q.hin)
+        ~&  [%gall-crud-error pax hen q.hin]  [~ ..^$]
       ?:  ?=([%r *] pax)
         (gave hen t.pax q.hin)
       ?:  ?=([%x *] pax)
@@ -228,7 +246,7 @@
               lot=coin
               tyl=path
           ==
-      ^-  (unit (unit (pair logo ,*)))
+      ^-  (unit (unit (pair mark ,*)))
       =+  ^=  vew  ^-  lens                             ::  XX future scry
         %.  :-  use
             :-  [who syd ((hard case) p.lot)]
@@ -351,13 +369,13 @@
             %f
           ?-  -.p.+.sih
             %&  [%g %mess [our app] you `cage`q.p.p.+.sih]
-            %|  (rod %e p.p.+.sih)
+            %|  (rod %e ~ %ford-fail p.p.+.sih)
           ==
         ::
             %g
           ?-  -.+.sih
+            %crud  !!
             %dumb  !!
-            %lean  !!
             %mean  (rod %e p.+.sih)
             %nice  (rod %k ~)
             %rush  !!
@@ -371,8 +389,8 @@
           :+  %pass  [%r pax]
           ^-  note
           ?-  -.+.sih
+            %crud  !!
             %dumb  !!
-            %lean  (rod %n ~)
             %mean  !!
             %nice  !!
             %rush  (rod %d p.+.sih q.+.sih)
@@ -391,11 +409,10 @@
   :_  ..^$  :_   ~
   ^-  move  :-  neh
   ?-  -.ron
-    %d  [%pass /x/d `note`[%f %exec p.saq ~ %vale p.ron saq q.ron]]
+    %d  [%pass /x/d `note`[%f %exec p.saq ~ %vale p.ron q.saq q.ron]]
     %e  [%give %mean p.ron]
-    %f  [%pass /x/f `note`[%f %exec p.saq ~ %vale p.ron saq q.ron]]
+    %f  [%pass /x/f `note`[%f %exec p.saq ~ %vale p.ron q.saq q.ron]]
     %k  [%give %nice ~]
-    %n  [%give %lean ~]
   ==
 ::
 ++  gawk                                                ::  %r call/request
@@ -413,7 +430,7 @@
     ==
   ^-  note
   ?-  -.rok
-    %m  [%f %exec p.saq ~ %vale p.rok saq q.rok]
+    %m  [%f %exec p.saq ~ %vale p.rok q.saq q.rok]
     %s  [%g %show [p.saq app] q.saq p.rok]
     %u  [%g %nuke [p.saq app] q.saq]
   ==
@@ -522,7 +539,7 @@
           ((hard null) q.vax)
       =+  ^=  yob
           |=  vax=vase  ^-  cage
-          [((hard logo) -.q.vax) (slot 3 vax)]
+          [((hard mark) -.q.vax) (slot 3 vax)]
       =+  ^=  yar
           |=  vax=vase  ^-  arch
           ((hard arch) q.vax)
@@ -643,7 +660,7 @@
       ++  harm                                          ::  arm as silk
         |=  [arm=term kas=silk]
         ^-  silk
-        [%ride kas [%dirt [%cnzy arm]]]
+        [%ride [%cnzy arm] kas]
       ::
       ++  home                                          ::  load application
         ^-  silk
@@ -669,7 +686,7 @@
              ?.  &(?=(^ q.vax) ?=(@ -.q.vax))
                [~ (give %crud %peek-lame *(list tank))]
              ::  ~>  %slog.[0 (skol p:(slot 3 vax))]
-             :-  `[((hard logo) -.q.vax) (slot 3 vax)]
+             :-  `[((hard mark) -.q.vax) (slot 3 vax)]
              +>.$
           |  [~ (give %crud %made p.p.+.sih)]
         ==
@@ -753,7 +770,7 @@
           ::
               %poke
             =^  gud  +>.$  (mack q.hin)
-            ?^  gud  (give %mean leaf/"mack-fail" ~)
+            ?^  gud  (give %mean ~ %poke-mack-fail ~)
             +>.$
           ::
               %pour
@@ -773,6 +790,7 @@
             %=  +>.$
               sup.sat  (~(del by sup.sat) ost)
               pus.sat  (~(del ju pus.sat) pax ost)
+              peq.sat  (~(del by peq.sat) ost)
             ==
           ==
         ::
@@ -873,8 +891,7 @@
       ++  warm                                          ::  vase has arm
         |=  cog=@tas
         ^-  ?
-        ?~  huv.sat  |
-        !=(~ q:(~(fino ut p.u.huv.sat) 0 %free cog))
+        ?~(huv.sat | (slab cog p.u.huv.sat))
       ::
       ++  work                                          ::  eat queue
         |-  ^+  +
@@ -923,10 +940,16 @@
           (give(qic.sat ~) %crud p.kon q.kon)
         ::
             %nuke
-          ?.  (warm %pull)
-            +>.$(qic.sat ~)
-          ?>  ?=(^ huv.sat)
-          (yawl [%pull ~] u.huv.sat [[%atom %ud] ost])
+          ?:  (warm %pull)
+            ?>  ?=(^ huv.sat)
+            (yawl [%pull ~] u.huv.sat [[%atom %ud] ost])
+          =+  pax=+:(fall (~(get by sup.sat) ost) *[ship path])
+          %=  +>.$
+            qic.sat  ~
+            sup.sat  (~(del by sup.sat) ost)
+            pus.sat  (~(del ju pus.sat) pax ost)
+            peq.sat  (~(del by peq.sat) ost)
+          ==
         ::
             %mess
           =+  ^=  cog  ^-  term
@@ -934,7 +957,7 @@
               =+  goc=(cat 3 'poke-' p.q.kon)
               ?:((warm goc) goc %poke)
           ?.  (warm cog)
-            (give(qic.sat ~) %mean leaf/"poke-fail" ~)
+            (give(qic.sat ~) %mean ~ %poke-find-fail ~)
           ?>  ?=(^ huv.sat)
           =+  sam=:(slop [[%atom %ud] ost] [[%atom %p] p.kon] q.q.kon)
           ::  ~&  [%mess-poke cog]

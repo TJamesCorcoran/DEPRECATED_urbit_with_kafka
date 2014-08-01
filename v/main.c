@@ -72,87 +72,89 @@ _main_getopt(c3_i argc, c3_c** argv)
   u2_Host.ops_u.pro = u2_no;
   u2_Host.ops_u.veb = u2_yes;
   u2_Host.ops_u.nuu = u2_no;
+  u2_Host.ops_u.mem = u2_no;
   u2_Host.ops_u.kno_w = DefaultKernel;
   u2_Host.ops_u.kaf_c = (c3_c*) NULL;
 
-  while ( (ch_i = getopt(argc, argv, "I:A:K:X:f:k:l:n:p:r:LabcdgqvF")) != -1 ) {
+  while ( (ch_i = getopt(argc, argv, "I:A:X:f:k:l:n:p:r:LabcdgqvFM")) != -1 ) {
     switch ( ch_i ) {
-    case 'A': {
-      u2_Host.ops_u.adm_c = strdup(optarg);
-      if ((strcmp(optarg, "ltok") != 0) && (strcmp(optarg, "ktol"))) {
-        fprintf(stderr, "illegal -A subcommand: %s\n",  optarg);
-        return u2_no;
-      }
-      break;
-    }
-    case 'I': {
-      u2_Host.ops_u.imp_c = strdup(optarg);
-      break;
-    }
-    case 'K': {
-      u2_Host.ops_u.kaf_c = strdup(optarg);
-      break;
-    }
-    case 'X': {
-      if ( 0 != strcmp("wtf", optarg) ) {
-        return u2_no;
-      } else u2_Host.ops_u.fog = u2_yes;
-      break;
-    }
-    case 'f': {
-      if ( u2_no == _main_readw(optarg, 100, &u2_Host.ops_u.fuz_w) ) {
-        return u2_no;
-      }
-      break;
-    }
-    case 'k': {
-      if ( u2_no == _main_readw(optarg, 256, &u2_Host.ops_u.kno_w) ) {
-        return u2_no;
-      }
-      break;
-    }
-    case 'l': {
-      if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
-        return u2_no;
-      } else u2_Host.ops_u.rop_s = arg_w;
-      break;
-    }
-    case 'n': {
-      u2_Host.ops_u.nam_c = strdup(optarg);
-      break;
-    }
-    case 'p': {
-      if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
-        return u2_no;
-      } else u2_Host.ops_u.por_s = arg_w;
-      break;
-    }
-    case 'r': {
-      u2_Host.ops_u.raf_c = strdup(optarg);
-      break;
-    }
-    case 'L': { u2_Host.ops_u.loh = u2_yes; break; }
-    case 'F': {
-      u2_Host.ops_u.loh = u2_yes;
-      u2_Host.ops_u.fak = u2_yes;
-      break;
-    }
-    case 'a': { u2_Host.ops_u.abo = u2_yes; break; }
-    case 'b': { u2_Host.ops_u.bat = u2_yes; break; }
-    case 'c': { u2_Host.ops_u.nuu = u2_yes; break; }
-    case 'd': { u2_Host.ops_u.dem = u2_yes; break; }
-    case 'g': { u2_Host.ops_u.gab = u2_yes; break; }
-    case 'q': { u2_Host.ops_u.veb = u2_no; break; }
-    case 'v': { u2_Host.ops_u.veb = u2_yes; break; }
-    case '?': default: {
-      return u2_no;
-    }
-    }
-  }
+      case 'A': {
+        u2_Host.ops_u.adm_c = strdup(optarg);
+        if ((strcmp(optarg, "ltok") != 0) && (strcmp(optarg, "ktol"))) {
+          fprintf(stderr, "illegal -A subcommand: %s\n",  optarg);
+          return u2_no;
 
-  if (u2_Host.ops_u.adm_c != 0 &&  u2_Host.ops_u.kaf_c == 0) {
-    fprintf(stderr, "Doing log <-> kafka admin requires kafka spec (-A flag requires -K).\n");
-    return u2_no;
+        }
+        break;
+      }
+      case 'M': {
+        u2_Host.ops_u.mem = u2_yes;
+        break;
+      }
+      case 'I': {
+        u2_Host.ops_u.imp_c = strdup(optarg);
+        break;
+      }
+      case 'X': {
+        if ( 0 != strcmp("wtf", optarg) ) {
+          return u2_no;
+        } else u2_Host.ops_u.fog = u2_yes;
+        break;
+      }
+      case 'f': {
+        if ( u2_no == _main_readw(optarg, 100, &u2_Host.ops_u.fuz_w) ) {
+          return u2_no;
+        }
+        break;
+      }
+      case 'k': {
+        if ( u2_no == _main_readw(optarg, 256, &u2_Host.ops_u.kno_w) ) {
+          return u2_no;
+        }
+        break;
+      }
+      case 'l': {
+        if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
+          return u2_no;
+        } else u2_Host.ops_u.rop_s = arg_w;
+        break;
+      }
+      case 'n': {
+        u2_Host.ops_u.nam_c = strdup(optarg);
+        break;
+      }
+      case 'p': {
+        if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
+          return u2_no;
+        } else u2_Host.ops_u.por_s = arg_w;
+        break;
+      }
+      case 'r': {
+        u2_Host.ops_u.raf_c = strdup(optarg);
+        break;
+      }
+      case 'L': { u2_Host.ops_u.loh = u2_yes; break; }
+      case 'F': {
+        u2_Host.ops_u.loh = u2_yes;
+        u2_Host.ops_u.fak = u2_yes;
+        break;
+      }
+      case 'K': {
+        u2_Host.ops_u.kaf_c = strdup(optarg);
+        break;
+      }
+
+      case 'a': { u2_Host.ops_u.abo = u2_yes; break; }
+      case 'b': { u2_Host.ops_u.bat = u2_yes; break; }
+      case 'c': { u2_Host.ops_u.nuu = u2_yes; break; }
+      case 'd': { u2_Host.ops_u.dem = u2_yes; break; }
+      case 'g': { u2_Host.ops_u.gab = u2_yes; break; }
+      case 'q': { u2_Host.ops_u.veb = u2_no; break; }
+      case 'v': { u2_Host.ops_u.veb = u2_yes; break; }
+      case '?': default: {
+        return u2_no;
+      }
+    }
   }
 
   if ( u2_Host.ops_u.rop_s == 0 && u2_Host.ops_u.raf_c != 0 ) {

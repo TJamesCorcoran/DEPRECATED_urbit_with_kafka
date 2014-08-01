@@ -1,4 +1,4 @@
-::
+!:
 ::  batz (4b), shell
 ::
 |=  pit=vase
@@ -16,6 +16,7 @@
               [%logo p=@]                               ::  logout
               [%note p=@tD q=tank]                      ::  show message
               [%save p=path q=@]                        ::  write atomic file
+              [%sage p=path q=*]                        ::  write jamnoun
               [%talk p=tank]                            ::  show on console
               [%tell p=(list ,@t)]                      ::  dump lines
               [%veer p=@ta q=path r=@t]                 ::  install vane
@@ -73,6 +74,7 @@
               [%mess p=hasp q=ship r=cage]              ::
               [%nuke p=hasp q=ship]                     ::
               [%show p=hasp q=ship r=path]              ::
+              [%wipe p=hasp]                            ::
           ==  ==  ==                                    ::
 ++  rave                                                ::  see %clay
           $%  [& p=mood]                                ::  single request
@@ -85,13 +87,12 @@
               [%hail ~]                                 ::  by any
               [%helo p=path q=prod]                     ::  by %ames
               [%init p=@p]                              ::  by %ames
-              [%lean ~]                                 ::
-              [%mean p=(list tank)]                     ::
-              [%nice ~]                                 ::
+              [%mean p=(unit ,[p=term q=(list tank)])]  ::  by %gall
+              [%nice ~]                                 ::  by %gall
               [%note p=@tD q=tank]                      ::  by %clay
               [%pipe p=(unit ,[p=tutu q=(list)])]       ::  by %batz
-              [%rush p=logo q=*]                        ::
-              [%rust p=logo q=*]                        ::
+              [%rush p=mark q=*]                        ::
+              [%rust p=mark q=*]                        ::
               [%thou p=httr]                            ::  by %eyre
               [%waft p=sock q=*]                        ::  by %ames
               [%went p=ship q=cape]                     ::  by %ames
@@ -275,7 +276,6 @@
       %hail  [[[hen %give sin] ~] +<.^^$]
       %helo  [~ +<.^^$]
       %init  [[[hen %give sin] ~] +<.^^$]
-      %lean  [~ +<.^^$]
       %mean  [~ +<.^^$]
       %nice  [~ +<.^^$]
       %note  [[[hen %give sin] ~] +<.^^$]
@@ -1431,7 +1431,7 @@
 ::
 ++  scry
   |=  [fur=(unit (set monk)) ren=@tas his=ship syd=desk lot=coin tyl=path]
-  ^-  (unit (unit (pair logo ,*)))
+  ^-  (unit (unit (pair mark ,*)))
   ~
 ::
 ++  stay  [%0 big dez]
