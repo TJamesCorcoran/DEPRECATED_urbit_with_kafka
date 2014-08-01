@@ -1528,7 +1528,7 @@ _raft_lame(u2_reck* rec_u, u2_noun ovo, u2_noun why, u2_noun tan)
       u2_noun nog = u2_lo_soft(rec_u, 0, u2_reck_poke, u2k(vab));
 
       if ( u2_blip == u2h(nog) ) {
-        _raft_sure_guard(rec_u, vab, u2k(u2h(u2t(nog))), u2k(u2t(u2t(nog))));
+        _raft_sure_guard(rec_u, vab, u2k(u2h(u2t(nog))), u2k(u2t(u2t(nog))), c3_false);
         u2z(nog);
       }
       else {
@@ -1638,7 +1638,7 @@ _raft_comm(u2_reck* rec_u, c3_d bid_d)
   egg_u = rec_u->ova.egg_u;
   while ( egg_u ) {
     if ( egg_u->ent_d <= bid_d ) {
-      egg_u->cit = u2_yes;
+      egg_u->log = u2_yes;
     } else break;
     egg_u = egg_u->nex_u;
   }
