@@ -1169,7 +1169,7 @@ u2_unix_ef_init(u2_noun who)
 {
   c3_c    base_c[2048];
   u2_sist_get_doturb_dirstr(base_c, 2048);
-  u2_unix_acquire(base_c);
+  //  u2_unix_acquire(base_c);
 
   u2_reck_plan(u2A, u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul),
                     u2nq(c3__into, who,
