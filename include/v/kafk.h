@@ -22,5 +22,6 @@ c3_d u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y);
 // shutdown
 void u2_kafka_down(void);
 
-
-
+// admin
+void u2_kafka_admin_kafka_to_egz();
+void u2_kafka_admin_egz_to_kafka();

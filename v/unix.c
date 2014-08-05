@@ -20,6 +20,7 @@
 #include "all.h"
 #include "f/coal.h"
 #include "v/vere.h"
+#include "v/sist.h"
 
 /* _unix_down(): descend path.
 */
@@ -879,7 +880,7 @@ _unix_hot_gain(u2_noun who, u2_bean mek)
   c3_c*   hox_c = u2_cr_string(hox);
 
   c3_c    pax_c[2048];  
-  u2_sist_get_ship_dirstr(pax_c, 2048);
+  u2_sist_get_pier_dirstr(pax_c, 2048);
 
   DIR*    rid_u = opendir(pax_c);
 
@@ -1167,8 +1168,8 @@ _unix_desk_sync_ergo(u2_noun  hox,
 void
 u2_unix_ef_init(u2_noun who)
 {
-  c3_c    base_c[2048];
-  u2_sist_get_doturb_dirstr(base_c, 2048);
+  // c3_c    base_c[2048];
+  // u2_sist_get_doturb_dirstr(base_c, 2048);
   //  u2_unix_acquire(base_c);
 
   u2_reck_plan(u2A, u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul),

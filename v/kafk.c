@@ -47,15 +47,6 @@ clock_t before;
  */
 static void _kafka_msg_delivered_cb (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque) 
 {
-  clock_t after = clock();
-
-  float diff = ((float)after - (float)before) / (CLOCKS_PER_SEC * 1000);   
-  // printf("-----------\n");
-  // printf("before : %f\n",(float) before);   
-  // printf("after : %f\n", (float) after);   
-  // printf("duration : %f\n",diff);   
-
-
   if (rkmessage->err){
     fprintf(stderr, "%% Kafka message delivery failed: %s\n", rd_kafka_message_errstr(rkmessage));
   }
@@ -145,7 +136,7 @@ void u2_kafk_pre_read(c3_d offset_d)
 //
 c3_t _kafk_read_internal(rd_kafka_message_t *rkmessage, 
                          c3_c* buf_c, // return arg
-                         int * len_c,
+                         c3_l * len_c,
                          int maxlen_c)
 {
   if (rkmessage->err) {
@@ -230,23 +221,27 @@ c3_t u2_kafk_read_one()
 
   data_c = msg_c + sizeof(u2_kafk_msg_header);
   printf("msg: %s\n", data_c);
+
+  return(c3_true);
 }
 
 u2_noun u2_kafk_read_all(u2_reck* rec_u,  u2_bean *  ohh)
 {
   int run = 1;
 
+
   while (run) {
     // NOTFORCHECKIN
   }
-
-
-
 
   // Stop consuming
   //     Note that we only consume at startup, so, yes, this is correct.
   //
   rd_kafka_consume_stop(u2K->topic_cons_handle_u, READ_PARTITION);
+
+  exit(-1); // NOTFORCHECKIN - unimplemented!
+  u2_noun uglyhack_u = (u2_noun) malloc(sizeof(u2_noun));
+  return(uglyhack_u);
 }
 
 #define U2_KAFK_VERSION 1

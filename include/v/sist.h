@@ -1,29 +1,15 @@
     /**  Disk persistence.
     **/
 
-      /* u2_sist_mkdir_chkpt_dir(): make checkpoint directory
-      */
-         void
-		 u2_sist_mkdir_chkpt_dir();
+         void u2_sist_mkdir_chkpt_dir();
 
-      /* u2_sist_get_pier_dirstr(): where is urbdir ?
-      */
-         void
-		 u2_sist_get_pier_dirstr(c3_c * str_w, int len_w);
-
-      /* u2_sist_get_lockfile_filestr()
-      */
-         void
-		 u2_sist_get_lockfile_filestr(c3_c * str_w, int len_w);
-
-      /* u2_sist_get_pill_filestr(): where is .pill stored?
-      */
-         void
-		 u2_sist_get_pill_filestr(c3_c * str_w, int len_w);
-
-
-         void 
-		 u2_sist_get_chkpt_filestr(c3_c* fil_c, c3_c* suf_c, c3_c* buf_c, int len_c);
+         void u2_sist_get_pier_dirstr(c3_c * str_w, int len_w);
+         void u2_sist_get_lockfile_filestr(c3_c * str_w, int len_w);
+         void u2_sist_get_pill_filestr(c3_c * str_w, int len_w);
+         void u2_sist_get_egz_filestr(c3_c* buf_c, int len_c);
+         void u2_sist_get_egz_quick_dirstr(c3_c * str_w, int len_w);
+         void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_w sequence_w);
+         void u2_sist_get_chkpt_filestr(c3_c* fil_c, c3_c* suf_c, c3_c* buf_c, int len_c);
 
       /* u2_sist_boot(): restore or create pier from disk.
       */

@@ -10,6 +10,9 @@
 
 #include "all.h"
 #include "v/vere.h"
+#include "v/sist.h"
+#include "v/egzh.h"
+#include "v/kafk.h"
 
 
 /* u2_rent: Log entry wire format.
@@ -548,7 +551,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
   }
 
   if ( red_i != ben_d ) {
-    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", red_i, ben_d));
+    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", (long int) red_i, ben_d));
     red_i = -1;
     goto fail;
   }
@@ -1764,7 +1767,7 @@ u2_raft_work(u2_reck* rec_u)
           if(u2_Host.ops_u.kaf_c){
             bid_d = u2_egz_push_ova(rec_u, ovo);
           } else {
-            bid_d = u2_kafk_push_ova(rec_u, ovo);  
+            bid_d = u2_kafk_push_ova(rec_u, ovo, KAFK_MSG_PRECOMMIT);  
           }
 
           // ...and  here we're putting the log ID # in it

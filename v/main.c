@@ -442,8 +442,8 @@ main(c3_i   argc,
   c3_y * msg_2_c= (c3_y *) "message two";
   c3_d sequence_2_d = u2_kafk_push( (c3_w*) msg_2_c, strlen( (char * )msg_2_c), KAFK_MSG_POSTCOMMIT);
 
-  printf("sequence 1 #: %i\n", sequence_1_d);
-  printf("sequence 2 #: %i\n", sequence_2_d);
+  printf("sequence 1 #: %lli\n", sequence_1_d);
+  printf("sequence 2 #: %lli\n", sequence_2_d);
 
   u2_kafk_pre_read(sequence_1_d);
 

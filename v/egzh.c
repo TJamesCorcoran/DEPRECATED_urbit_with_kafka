@@ -200,7 +200,7 @@ _egz_rest_nuu(u2_ulog* lug_u, u2_uled led_u, c3_c* old_c)
 c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
 {
   struct stat buf_b;
-  u2_noun     sev_l, sal_l, key_l, tno_l;
+  u2_noun     sev_l; // , sal_l, key_l, tno_l;
 
   c3_i pig_i = O_RDWR;
 #ifdef O_DSYNC
@@ -231,7 +231,7 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
 
   size_w = read(*fid_i, led_u, sizeof(*led_u));
   if ( sizeof(*led_u) != size_w)  {
-    uL(fprintf(uH, "egzh: record is corrupt (a)\n", ful_c));
+    fprintf(stderr, "egzh: record is corrupt (a)\n");
     u2_lo_bail(rec_u);
   }
 
@@ -240,21 +240,22 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
     *fid_i = u2R->lug_u.fid_i;
   }
   else if (u2_mug('g') != led_u->mag_l ) {
-    uL(fprintf(uH, "egzh: record (%s) is obsolete (or corrupt)\n", ful_c));
+    fprintf(stderr, "egzh: record is obsolete (or corrupt)\n");
     u2_lo_bail(rec_u);
   }
 
   if ( led_u->kno_w != rec_u->kno_w ) {
     //  XX perhaps we should actually do something here
     //
-    uL(fprintf(uH, "egzh: (not) translating events (old %d, now %d)\n",
+    fprintf(stderr, "egzh: (not) translating events (old %d, now %d)\n",
                led_u->kno_w,
-               rec_u->kno_w));
+               rec_u->kno_w);
   }
+
   sev_l = led_u->sev_l;
-  sal_l = led_u->sal_l;
-  key_l = led_u->key_l;
-  tno_l = led_u->tno_l;
+  /* sal_l = led_u->sal_l; */
+  /* key_l = led_u->key_l; */
+  /* tno_l = led_u->tno_l; */
 
   {
     u2_noun old = u2_dc("scot", c3__uv, sev_l);
@@ -270,10 +271,12 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
   c3_assert(sev_l != rec_u->sev_l);   //  1 in 2 billion, just retry
 
 
-  fprintf(stderr, "egzh: opened without error %s\n");
+  fprintf(stderr, "egzh: opened without error\n");
 
   //  check passcode
   // NOTFORCHECKIN  _sist_passcode(rec_u, sal_l);
+
+  return c3_true;
 }
 
 // read from the file. Return one noun which is event number of first item.
@@ -288,7 +291,7 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
 //    * first read noun, which is a cell structure, which means that later we can iterate over it by using
 //      u2h() and u2t().  All reading from  disk should be done in this func!
 
-u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
+u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,   u2_bean *  ohh)
 {
   c3_d    ent_d;
   c3_d    end_d;
@@ -417,11 +420,15 @@ u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
     roe = u2nc(u2_cke_cue(ron), roe);
   }
   rec_u->ent_d = c3_max(las_d + 1ULL, old_d);
+
+  exit(-1); // NOTFORCHECKIN - unimplemented!
+  u2_noun uglyhack_u = (u2_noun) malloc(sizeof(u2_noun));
+  return( uglyhack_u);
 }
 
 // Create a new egz file w default header
 //
-void u2_egz_write_header(u2_reck* rec_u)
+void u2_egz_write_header(u2_reck* rec_u, c3_l sal_l)
 {
   c3_i pig_i = O_CREAT | O_WRONLY | O_EXCL;
 #ifdef O_DSYNC
@@ -431,7 +438,6 @@ void u2_egz_write_header(u2_reck* rec_u)
   c3_c    ful_c[2048];  
   u2_sist_get_egz_filestr(ful_c, 2048);
   struct stat buf_b;
-  c3_l        sal_l;
   c3_i        fid_i;
 
   if ( ((fid_i = open(ful_c, pig_i, 0600)) < 0) ||
@@ -474,13 +480,13 @@ void u2_egz_write_header(u2_reck* rec_u)
 
   u2R->lug_u.len_d = c3_wiseof(led_u);
 
-  c3_i ret_i = syncfs(fid_i); // NOTFORCHECKIN
+  syncfs(fid_i); // NOTFORCHECKIN
 
 }
 
 
 
-void u2_egz_rewrite_header(u2_reck* rec_u, c3_i fid_i, u2_bean ohh)
+void u2_egz_rewrite_header(u2_reck* rec_u, c3_i fid_i, u2_bean ohh, u2_uled * led_u)
 {
   //  Increment sequence numbers. New logs start at 1.
   if ( u2_yes == ohh ) {
@@ -514,20 +520,15 @@ void u2_egz_rewrite_header(u2_reck* rec_u, c3_i fid_i, u2_bean ohh)
     }
   }
 
-
-  u2_uled led_u;
-
-  u2_noun     sev_l, tno_l, key_l, sal_l;
-
-  led_u.mag_l = u2_mug('g');
-  led_u.sal_l = sal_l;
-  led_u.sev_l = rec_u->sev_l;
-  led_u.key_l = rec_u->key ? u2_mug(rec_u->key) : 0;
-  led_u.kno_w = rec_u->kno_w;         //  may need actual translation!
-  led_u.tno_l = 1;
+  led_u->mag_l = u2_mug('g');
+  // led_u->sal_l stays the same
+  led_u->sev_l = rec_u->sev_l;
+  led_u->key_l = rec_u->key ? u2_mug(rec_u->key) : 0;
+  led_u->kno_w = rec_u->kno_w;         //  may need actual translation!
+  led_u->tno_l = 1;                    // why sequence # 1 ?
 
   if ( (-1 == lseek64(fid_i, 0, SEEK_SET)) ||
-       (sizeof(led_u) != write(fid_i, &led_u, sizeof(led_u))) )
+       (sizeof(led_u) != write(fid_i, led_u, sizeof(u2_uled))) )
     {
       uL(fprintf(uH, "record failed to rewrite\n"));
       u2_lo_bail(rec_u);
@@ -558,7 +559,7 @@ u2_egz_push(u2_raft* raf_u, c3_w* bob_w, c3_w len_w)
 
   // open, write, close file
   c3_i fid_i = open(bas_c, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-  if (NULL == fid_i){
+  if (fid_i < 0){
     fprintf(stderr, "egz_push() failed - fopen - %s\n", strerror(errno));
     exit(1);
   }
@@ -629,7 +630,7 @@ void _egz_consolidator(void *arg)
     c3_c    egzdir_c[2048];  
     u2_sist_get_egz_quick_dirstr(egzdir_c, 2048);
 
-    if (dir = opendir (egzdir_c)) {
+    if ((dir = opendir (egzdir_c))) {
         while ((ent = readdir (dir)) != NULL) {
           if (strcmp(".", ent->d_name)) continue;
           if (strcmp("..", ent->d_name)) continue;
@@ -666,7 +667,7 @@ u2_reck *  u2_egz_util_get_u2a()
   return(u2A);
 }
 
-u2_reck *  u2_egz_util_get_u2k()
+u2_kafk *  u2_egz_util_get_u2k()
 {
   return(u2K);
 }

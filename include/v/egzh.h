@@ -33,9 +33,15 @@ typedef struct {
 } u2_ular;
 
 
+void     u2_egz_init();
 
-c3_t     u2_egz_open(u2_reck* rec_u, c3_i * fid_, u2_uled * led_u);
-u2_noun  u2_egz_read_all(u2_reck* rec_u,  u2_bean *  ohh);
-void     u2_egz_rewrite_header(u2_reck* rec_u,  c3_i fid_i, u2_bean ohh);
+void     u2_egz_write_header(u2_reck* rec_u, c3_l sal_l);
+void     u2_egz_rewrite_header(u2_reck* rec_u,  c3_i fid_i, u2_bean ohh, u2_uled * led_u);
+
+c3_t     u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u);
+
+u2_noun  u2_egz_read_all(u2_reck* rec_u,  c3_i fid_i,  u2_bean *  ohh);
+
 c3_d     u2_egz_push(u2_raft* raf_u, c3_w* bob_w, c3_w len_w);
-void     u2_egz_write_header(u2_reck* rec_u);
+c3_d     u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo);
+

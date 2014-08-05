@@ -20,6 +20,9 @@
 #include "all.h"
 #include "f/coal.h"
 #include "v/vere.h"
+#include "v/egzh.h"
+#include "v/kafk.h"
+#include "v/sist.h"
 
 /* _reck_mung(): formula wrapper with gate and sample.
 */
@@ -519,7 +522,7 @@ _reck_kick_sync(u2_reck* rec_u, u2_noun pox, u2_noun fav)
 static u2_bean
 _reck_kick_newt(u2_reck* rec_u, u2_noun pox, u2_noun fav)
 {
-  u2_noun p_fav;
+  // u2_noun p_fav;
 
   switch ( u2h(fav) ) {
     default: break;

@@ -19,6 +19,7 @@
 #include "v/vere.h"
 #include "v/sist.h"
 #include "v/egzh.h"
+#include "v/kafk.h"
 
 #if defined(U2_OS_linux)
 #include <stdio_ext.h>
@@ -289,7 +290,7 @@ void u2_sist_get_pill_filestr(c3_c * str_w, int len_w)
     // existing pier; use it
     c3_c bas_c[2048];
     u2_sist_get_pier_dirstr(bas_c, 2048);
-    snprintf(str_w, len_w, "%s/.urb/urbit.pill", bas_c, u2_Host.cpu_c);
+    snprintf(str_w, len_w, "%s/.urb/urbit.pill", bas_c);
   }
 }
 
@@ -662,7 +663,7 @@ _sist_home(u2_reck* rec_u)
     _sist_fast(u2_reck* rec_u, u2_noun pas, c3_l key_l)
   {
     c3_c    ful_c[2048];
-    c3_c*   hom_c = u2_Host.cpu_c;
+    //    c3_c*   hom_c = u2_Host.cpu_c;
     u2_noun gum   = u2_dc("scot", 'p', key_l);
     c3_c*   gum_c = u2_cr_string(gum);
     u2_noun yek   = u2_dc("scot", 'p', pas);
@@ -756,8 +757,8 @@ _sist_home(u2_reck* rec_u)
   static void
     _sist_zest(u2_reck* rec_u)
   {
-    struct stat buf_b;
-    c3_c        ful_c[8193];
+    // struct stat buf_b;
+    // c3_c        ful_c[8193];
     c3_l        sal_l;
 
     //  Create the ship directory.
@@ -789,7 +790,7 @@ _sist_home(u2_reck* rec_u)
     // Create a new egz file w default header
     //   Do we really want to do that in all cases, even if using kafka?  Unclear.
     //   But what if they restart later w egz logging? Then we've got it. <shrug>
-    u2_egz_write_header(rec_u);
+    u2_egz_write_header(rec_u, sal_l);
 
     //  Work through the boot events.
     u2_raft_work(rec_u);
@@ -823,7 +824,6 @@ static void
 _sist_rest(u2_reck* rec_u)
 {
   c3_i        fid_i;
-  c3_c        ful_c[2048];
   c3_d        old_d = rec_u->ent_d;
   c3_d        kaf_d = rec_u->kaf_d;
   c3_d        las_d = 0;
@@ -852,11 +852,11 @@ _sist_rest(u2_reck* rec_u)
 
   if (kafk_b) {
     // get ready to read: note use of kaf_d
-    c3_t success  = u2_kafk_pre_read(kaf_d);
+    u2_kafk_pre_read(kaf_d);
   } else {
     //  Open the file, check the header, store details in fid_i, led_u
     c3_t success = u2_egz_open(rec_u, & fid_i, & led_u);
-    if (success != c3_true) { return; }
+    if (success != c3_true) { exit(-1); }
   }
 
   // (3) Read in first event from log.  See if there's anything newer
@@ -867,7 +867,7 @@ _sist_rest(u2_reck* rec_u)
   if (kafk_b) {
     roe = u2_kafk_read_all(rec_u, & ohh);
   } else {
-    roe = u2_egz_read_all(rec_u, & ohh);
+    roe = u2_egz_read_all(rec_u, fid_i, & ohh);
   }
 
   if ( u2_nul == roe ) {
@@ -938,7 +938,7 @@ _sist_rest(u2_reck* rec_u)
   if (kafk_b) {
     // do nothing; not relevant to kafka
   } else {
-    u2_egz_rewrite_header(rec_u, fid_i, ohh);
+    u2_egz_rewrite_header(rec_u, fid_i, ohh, & led_u);
   }
 
   // success
@@ -1014,8 +1014,6 @@ u2_sist_boot(void)
     _sist_make(u2A, pig);
   }
   else {
-    //    u2_egz_write_header(u2A); // NOTFORCHECKIN - don't call this here; just a hack to fix something
-
     _sist_rest(u2A);
   }
 }

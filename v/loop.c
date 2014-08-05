@@ -23,6 +23,8 @@
 
 #include "all.h"
 #include "v/vere.h"
+#include "v/egzh.h"
+#include "v/kafk.h"
 
 static jmp_buf Signal_buf;
 #ifndef SIGSTKSZ
