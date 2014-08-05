@@ -36,6 +36,7 @@
 #endif
 
 
+
   /* _sist_rest_nuu(): upgrade log from previous format.
    */
 static void
@@ -188,12 +189,18 @@ _egz_rest_nuu(u2_ulog* lug_u, u2_uled led_u, c3_c* old_c)
 
 
 // open the egz.hope file
-
+//   * sanity check:
+//        * egz exists
+//        * is not corrupt,
+//        * arvo kernel versions match
+//        * etc
+//   * store details
+//        * egz file handle in u2R->lug_u
+//        * tno_l (msg number) in 
 c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
 {
   struct stat buf_b;
   u2_noun     sev_l, sal_l, key_l, tno_l;
-
 
   c3_i pig_i = O_RDWR;
 #ifdef O_DSYNC
@@ -220,8 +227,11 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
   u2R->lug_u.fid_i = *fid_i;
   u2R->lug_u.len_d = ((buf_b.st_size + 3ULL) >> 2ULL);
 
-  if ( sizeof(*led_u) != read(*fid_i, led_u, sizeof(led_u)) ) {
-    uL(fprintf(uH, "record is corrupt (a)\n", ful_c));
+  c3_w        size_w;
+
+  size_w = read(*fid_i, led_u, sizeof(*led_u));
+  if ( sizeof(*led_u) != size_w)  {
+    uL(fprintf(uH, "egzh: record is corrupt (a)\n", ful_c));
     u2_lo_bail(rec_u);
   }
 
@@ -230,7 +240,7 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
     *fid_i = u2R->lug_u.fid_i;
   }
   else if (u2_mug('g') != led_u->mag_l ) {
-    uL(fprintf(uH, "record (%s) is obsolete (or corrupt)\n", ful_c));
+    uL(fprintf(uH, "egzh: record (%s) is obsolete (or corrupt)\n", ful_c));
     u2_lo_bail(rec_u);
   }
 
@@ -260,10 +270,10 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
   c3_assert(sev_l != rec_u->sev_l);   //  1 in 2 billion, just retry
 
 
+  fprintf(stderr, "egzh: opened without error %s\n");
+
   //  check passcode
   // NOTFORCHECKIN  _sist_passcode(rec_u, sal_l);
-
-
 }
 
 // read from the file. Return one noun which is event number of first item.
@@ -278,7 +288,7 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_uled * led_u)
 //    * first read noun, which is a cell structure, which means that later we can iterate over it by using
 //      u2h() and u2t().  All reading from  disk should be done in this func!
 
-u2_noun u2_egz_read(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
+u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
 {
   c3_d    ent_d;
   c3_d    end_d;
@@ -370,6 +380,10 @@ u2_noun u2_egz_read(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
       u2_lo_bail(rec_u);
     }
 
+    // construct a noun from  the raw data
+    //   1) process raw data (???)
+    //   2) check hashing
+    //   3) decrypt
     ron = u2_ci_words(lar_u.len_w, img_w);
     free(img_w);
 
@@ -404,6 +418,67 @@ u2_noun u2_egz_read(u2_reck* rec_u, c3_i fid_i,  u2_bean *  ohh)
   }
   rec_u->ent_d = c3_max(las_d + 1ULL, old_d);
 }
+
+// Create a new egz file w default header
+//
+void u2_egz_write_header(u2_reck* rec_u)
+{
+  c3_i pig_i = O_CREAT | O_WRONLY | O_EXCL;
+#ifdef O_DSYNC
+  pig_i |= O_DSYNC;
+#endif
+
+  c3_c    ful_c[2048];  
+  u2_sist_get_egz_filestr(ful_c, 2048);
+  struct stat buf_b;
+  c3_l        sal_l;
+  c3_i        fid_i;
+
+  if ( ((fid_i = open(ful_c, pig_i, 0600)) < 0) ||
+       (fstat(fid_i, &buf_b) < 0) )
+    {
+      uL(fprintf(uH, "can't create record (%s)\n", ful_c));
+      u2_lo_bail(rec_u);
+    }
+#ifdef F_NOCACHE
+  if ( -1 == fcntl(fid_i, F_NOCACHE, 1) ) {
+    uL(fprintf(uH, "zest: can't uncache %s: %s\n", ful_c, strerror(errno)));
+    u2_lo_bail(rec_u);
+  }
+#endif
+
+  u2R->lug_u.fid_i = fid_i;
+  
+  u2_uled led_u;
+
+  led_u.mag_l = u2_mug('g');
+  led_u.kno_w = rec_u->kno_w;
+
+  if ( 0 == rec_u->key ) {
+    led_u.key_l = 0;
+  } else {
+    led_u.key_l = u2_mug(rec_u->key);
+
+    c3_assert(!(led_u.key_l >> 31));
+  }
+  led_u.sal_l = sal_l;
+  led_u.sev_l = rec_u->sev_l;
+  led_u.tno_l = 1;  // egg count init to 1
+
+  c3_w        size_w =  write(fid_i, &led_u, sizeof(led_u)); 
+
+  if ( sizeof(led_u) != size_w ) {
+    uL(fprintf(uH, "can't write record (%s)\n", ful_c));
+    u2_lo_bail(rec_u);
+  }
+
+  u2R->lug_u.len_d = c3_wiseof(led_u);
+
+  c3_i ret_i = syncfs(fid_i); // NOTFORCHECKIN
+
+}
+
+
 
 void u2_egz_rewrite_header(u2_reck* rec_u, c3_i fid_i, u2_bean ohh)
 {
@@ -544,7 +619,7 @@ u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo)
 
 void _egz_consolidator(void *arg)
 {
-  fprintf(stdout, "egz logging: consolidator live\n");
+  fprintf(stdout, "egzh: consolidator live\n");
 
   while(1) {
     sleep(10);
@@ -577,12 +652,21 @@ void _egz_consolidator(void *arg)
 
 void u2_egz_init()
 {
-  fprintf(stdout, "egz logging: begin\n");
+  fprintf(stdout, "egzh: egz.hope logging begin\n");
 
   // note that this new thread is not the libuv event loop and has nothing to do w the libuv event loop
   uv_thread_create(& u2K->egz_consolidator_thread_u,
                    & _egz_consolidator,
                    NULL);
-  fprintf(stdout, "egz logging: primary thread\n");
+  fprintf(stdout, "egzh: primary thread\n");
 }
 
+u2_reck *  u2_egz_util_get_u2a()
+{
+  return(u2A);
+}
+
+u2_reck *  u2_egz_util_get_u2k()
+{
+  return(u2K);
+}

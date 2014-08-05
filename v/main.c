@@ -25,6 +25,8 @@
 #define C3_GLOBAL
 #include "all.h"
 #include "v/vere.h"
+#include "v/kafk.h" // NOTFORCHECKIN
+
 
 /**  Legacy fixed jet linkage.  Destroy me please.
 **/
@@ -76,7 +78,7 @@ _main_getopt(c3_i argc, c3_c** argv)
   u2_Host.ops_u.kno_w = DefaultKernel;
   u2_Host.ops_u.kaf_c = (c3_c*) NULL;
 
-  while ( (ch_i = getopt(argc, argv, "I:A:X:f:k:l:n:p:r:LabcdgqvFM")) != -1 ) {
+  while ( (ch_i = getopt(argc, argv, "I:A:K:X:f:k:l:n:p:r:LabcdgqvFM")) != -1 ) {
     switch ( ch_i ) {
       case 'A': {
         u2_Host.ops_u.adm_c = strdup(optarg);
@@ -140,7 +142,7 @@ _main_getopt(c3_i argc, c3_c** argv)
         break;
       }
       case 'K': {
-        u2_Host.ops_u.kaf_c = strdup(optarg);
+        u2_Host.ops_u.kaf_c  = strdup(optarg);
         break;
       }
 
@@ -304,6 +306,7 @@ main(c3_i   argc,
     return 1;
   }
 
+
   u2_ve_sysopt();
 
   printf("~\n");
@@ -432,11 +435,38 @@ main(c3_i   argc,
 
   u2_lo_grab("main", u2_none);
 
+  // NOTFORCHECKIN ------------------------------ begin
+  u2_kafk_init();
+  c3_y * msg_1_c= (c3_y * ) "hello world";
+  c3_d sequence_1_d = u2_kafk_push( (c3_w*) msg_1_c, strlen( (char * )msg_1_c), KAFK_MSG_PRECOMMIT);
+  c3_y * msg_2_c= (c3_y *) "message two";
+  c3_d sequence_2_d = u2_kafk_push( (c3_w*) msg_2_c, strlen( (char * )msg_2_c), KAFK_MSG_POSTCOMMIT);
+
+  printf("sequence 1 #: %i\n", sequence_1_d);
+  printf("sequence 2 #: %i\n", sequence_2_d);
+
+  u2_kafk_pre_read(sequence_1_d);
+
+  c3_t success = u2_kafk_read_one();
+  if (success != c3_true){
+    printf("error");
+  }
+
+  success = u2_kafk_read_one();
+  if (success != c3_true){
+    printf("error");
+  }
+
+  exit(0);
+  // NOTFORCHECKIN  ------------------------------ end
+
+
+
   // booted in admin mode: do a task, then exit
   // booted in user mode: do command loop
   if (u2_Host.ops_u.adm_c != 0){
-    if (strcmp(u2_Host.ops_u.adm_c, "ltok") ==0) { u2_kafka_log_to_kafka(); }
-    else if (strcmp(u2_Host.ops_u.adm_c, "ktol") ==0) { u2_kafka_kafka_to_log(); }
+    if (strcmp(u2_Host.ops_u.adm_c, "ltok") ==0) { u2_kafka_admin_egz_to_kafka(); }
+    else if (strcmp(u2_Host.ops_u.adm_c, "ktol") ==0) { u2_kafka_admin_kafka_to_egz(); }
     else  { fprintf(stderr, "unsupported admin mode command %s\n", u2_Host.ops_u.adm_c); exit(1); }
   } else {
     u2_lo_loop();

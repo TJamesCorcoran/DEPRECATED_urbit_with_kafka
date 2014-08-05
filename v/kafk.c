@@ -39,6 +39,9 @@
 
 clock_t before;
 
+#define WRITE_PARTITION RD_KAFKA_PARTITION_UA
+#define READ_PARTITION  1
+
 /**
  * Message delivery report callback using the richer rd_kafka_message_t object.
  */
@@ -66,51 +69,68 @@ void u2_kafk_init()
 {
   if (! u2_Host.ops_u.kaf_c) { return ; }
 
-  rd_kafka_conf_t *conf_u;
-  rd_kafka_topic_conf_t *topic_conf_u;
+
+  // Create Kafka handles
+  //----------------------
+  //
   char errstr[512];
+  rd_kafka_conf_t *prod_conf_u  = rd_kafka_conf_new();
+  rd_kafka_conf_t *cons_conf_u  = rd_kafka_conf_new();
 
-  conf_u = rd_kafka_conf_new();
-  topic_conf_u = rd_kafka_topic_conf_new();
-
-
-  // Set up a message delivery report callback.
-  // It will be called once for each message, either on successful
-  // delivery to broker, or upon failure to deliver to broker. 
-  rd_kafka_topic_conf_set(topic_conf_u,
-                          "produce.offset.report",
-                          "true", errstr, sizeof(errstr));
-  rd_kafka_conf_set_dr_msg_cb(conf_u, _kafka_msg_delivered_cb);
-
-  // Create Kafka handle
-  if (!(u2K->kafka_handle_u = rd_kafka_new(RD_KAFKA_PRODUCER, conf_u,
-                          errstr, sizeof(errstr)))) {
-    fprintf(stderr,
-            "%% Failed to create new producer: %s\n",
-            errstr);
+  //  1) create raw handles
+  u2K->kafka_prod_handle_u = rd_kafka_new(RD_KAFKA_PRODUCER, prod_conf_u, errstr, sizeof(errstr));
+  if (! u2K->kafka_prod_handle_u ) {
+    fprintf(stderr, "%% Failed to create producer: %s\n", errstr);
+    exit(1);
+  }
+  u2K->kafka_cons_handle_u = rd_kafka_new(RD_KAFKA_CONSUMER, cons_conf_u, errstr, sizeof(errstr));
+  if (! u2K->kafka_cons_handle_u ) {
+    fprintf(stderr, "%% Failed to create consumer: %s\n", errstr);
     exit(1);
   }
 
-  // Add brokers.  These were specified on the command line.
-  if (rd_kafka_brokers_add(u2K->kafka_handle_u, u2_Host.ops_u.kaf_c) == 0) {
+  // 2) Add brokers.  These were specified on the command line.
+  if (rd_kafka_brokers_add(u2K->kafka_prod_handle_u, u2_Host.ops_u.kaf_c) == 0) {
+    fprintf(stderr, "%% No valid brokers specified\n");
+    exit(1);
+  }
+  if (rd_kafka_brokers_add(u2K->kafka_cons_handle_u, u2_Host.ops_u.kaf_c) == 0) {
     fprintf(stderr, "%% No valid brokers specified\n");
     exit(1);
   }
 
-  // Create topic (remove tilda)
-  u2K->topic_handle_u = rd_kafka_topic_new(u2K->kafka_handle_u, u2_Host.cpu_c + 1, topic_conf_u);
+  // 3) Set up delivery callback (producer only)
+  rd_kafka_conf_set_dr_msg_cb(prod_conf_u, _kafka_msg_delivered_cb);
+
+
+
+  // create topic handles
+  //---------------------
+  //
+
+  //   1) create configuration
+  rd_kafka_topic_conf_t * topic_prod_conf_u = rd_kafka_topic_conf_new();
+  rd_kafka_topic_conf_t * topic_cons_conf_u = rd_kafka_topic_conf_new();
+
+  //    2) customize configuration
+  rd_kafka_conf_res_t prod_topic_u = rd_kafka_topic_conf_set(topic_prod_conf_u, "produce.offset.report", "true", errstr, sizeof(errstr));
+  if (prod_topic_u != RD_KAFKA_CONF_OK){
+    exit(-1);
+  }
+
+  //    3) actually create topic handles
+  u2K->topic_prod_handle_u = rd_kafka_topic_new(u2K->kafka_prod_handle_u, u2_Host.cpu_c + 1, topic_prod_conf_u);
+  u2K->topic_cons_handle_u = rd_kafka_topic_new(u2K->kafka_cons_handle_u, u2_Host.cpu_c + 1, topic_cons_conf_u);
  
 }
 
 // 
 // ent_c - 
-void u2_kafk_pre_read(c3_c  start_offset_c)
+void u2_kafk_pre_read(c3_d offset_d)
 {
 
-  int64_t  offset_d = (int64_t) start_offset_c;
-
-  if (rd_kafka_consume_start(u2K->topic_handle_u, 
-                             RD_KAFKA_PARTITION_UA,
+  if (rd_kafka_consume_start(u2K->topic_cons_handle_u, 
+                             READ_PARTITION,
                              offset_d ) == -1){
     fprintf(stderr, "%% Failed to start consuming: %s\n",
             rd_kafka_err2str(rd_kafka_errno2err(errno)));
@@ -118,7 +138,15 @@ void u2_kafk_pre_read(c3_c  start_offset_c)
   }
 }
 
-void _kafk_consume(rd_kafka_message_t *rkmessage, void *opaque)
+// deal with kafka-specific details of reading: kafka error codes, etc.
+// boil it down to two  things:
+//   success: yes or no?
+//   payload: via return args
+//
+c3_t _kafk_read_internal(rd_kafka_message_t *rkmessage, 
+                         c3_c* buf_c, // return arg
+                         int * len_c,
+                         int maxlen_c)
 {
   if (rkmessage->err) {
     if (rkmessage->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
@@ -128,7 +156,7 @@ void _kafk_consume(rd_kafka_message_t *rkmessage, void *opaque)
               rd_kafka_topic_name(rkmessage->rkt),
               rkmessage->partition, rkmessage->offset);
 
-      return;
+      return(c3_false);
     }
 
     fprintf(stderr, "%% Consume error for topic \"%s\" [%"PRId32"] "
@@ -137,7 +165,7 @@ void _kafk_consume(rd_kafka_message_t *rkmessage, void *opaque)
             rkmessage->partition,
             rkmessage->offset,
             rd_kafka_message_errstr(rkmessage));
-    return;
+    return(c3_false);
   }
 
   fprintf(stdout, "%% Message (offset %"PRId64", %zd bytes):\n", rkmessage->offset, rkmessage->len);
@@ -148,32 +176,77 @@ void _kafk_consume(rd_kafka_message_t *rkmessage, void *opaque)
   }
 
   printf("%.*s\n", (int)rkmessage->len, (char *)rkmessage->payload);
+
+  if (rkmessage->len > maxlen_c) {
+    fprintf(stderr, "kafk: message from kafka log too big for read buffer");
+    return (c3_false);
+  }
+  *len_c = rkmessage->len;
+  memcpy(buf_c, rkmessage->payload, maxlen_c);
+
+  return(c3_true);
 }
 
-u2_noun u2_kafk_read(u2_reck* rec_u,  u2_bean *  ohh)
+c3_t u2_kafk_read_one()
+{
+  rd_kafka_message_t *rkmessage;
+
+  // Consume single message.
+  // See rdkafka_performance.c for high speed consuming of messages. 
+  rkmessage = rd_kafka_consume(u2K->topic_cons_handle_u, READ_PARTITION, 1000);
+  if (NULL == rkmessage){
+    fprintf(stderr, "kafk_read() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  c3_c msg_c[2048];
+  c3_l msg_len;
+  c3_t success = _kafk_read_internal(rkmessage, msg_c, &msg_len, 2048);
+  if (success != c3_true){
+    fprintf(stderr, "kafk_read() failed");
+    exit(1);
+  }
+
+  rd_kafka_message_destroy(rkmessage);
+
+  // POST-CONDITION: 
+  //    msg_c contains:
+  //      * a u2_kafk_msg_header
+  //      * the msg
+
+  u2_kafk_msg_header header_u;
+  c3_c * data_c = NULL;
+  memcpy(& header_u, msg_c, sizeof(u2_kafk_msg_header));
+
+  if (header_u.kafka_msg_format_version_y != 1){
+    fprintf(stderr, "kafk: read gave version != 1");
+    exit(1);
+  }
+  if ((header_u.kafka_msg_type_y != KAFK_MSG_PRECOMMIT) &&
+      (header_u.kafka_msg_type_y != KAFK_MSG_POSTCOMMIT)) {
+    fprintf(stderr, "kafk: illegal message type");
+    exit(1);
+  }
+
+  data_c = msg_c + sizeof(u2_kafk_msg_header);
+  printf("msg: %s\n", data_c);
+}
+
+u2_noun u2_kafk_read_all(u2_reck* rec_u,  u2_bean *  ohh)
 {
   int run = 1;
 
   while (run) {
-    rd_kafka_message_t *rkmessage;
-
-    /* Consume single message.
-     * See rdkafka_performance.c for high speed
-     * consuming of messages. */
-    rkmessage = rd_kafka_consume(u2K->topic_handle_u, RD_KAFKA_PARTITION_UA, 1000);
-
-    if (!rkmessage) /* timeout */
-      continue;
-
-    _kafk_consume(rkmessage, NULL);
-
-    /* Return message to rdkafka */
-    rd_kafka_message_destroy(rkmessage);
+    // NOTFORCHECKIN
   }
 
-  /* Stop consuming */
-  rd_kafka_consume_stop(u2K->topic_handle_u, RD_KAFKA_PARTITION_UA);
 
+
+
+  // Stop consuming
+  //     Note that we only consume at startup, so, yes, this is correct.
+  //
+  rd_kafka_consume_stop(u2K->topic_cons_handle_u, READ_PARTITION);
 }
 
 #define U2_KAFK_VERSION 1
@@ -188,27 +261,23 @@ void u2_kafk_decommit()
   // NOTFORCHECKIN
 }
 
-c3_d u2_kafk_push(c3_w kafk_rawlen_w, c3_w *   kafk_raw_w)
+// input:
+//     * data
+//     * datalen
+// return:
+//     * sequence #
+//
+c3_d u2_kafk_push(c3_w * kafk_raw_w, c3_w kafk_rawlen_w, c3_y msg_type_y)
 {
-  if (! u2_Host.ops_u.kaf_c) {    return ; }
-
-  // get sequence number
-  // // NOTFORCHECKIN - DO SOMETHING WITH THIS
-  c3_d seq_d = u2A->ent_d++;
-
-  // Send message. 
-  before = clock();
-
   u2_kafk_msg_header header_u;
   header_u.kafka_msg_format_version_y = 1;
-  header_u.kafka_msg_type_y = 0;
-  header_u.reserved_3_y = 0;
-  header_u.reserved_4_y = 0;
+  header_u.kafka_msg_type_y           = KAFK_MSG_PRECOMMIT;
+  header_u.ent_d                      = u2A->ent_d++; // sequence number
 
-  c3_w     kafk_len_w = kafk_len_w + sizeof(u2_kafk_msg_header);
+  c3_w     kafk_len_w = kafk_rawlen_w + sizeof(u2_kafk_msg_header);
   c3_w *   kafk_msg_w = malloc(kafk_len_w);
   if (kafk_msg_w == NULL){
-    fprintf(stderr, "malloc failure\n");
+    fprintf(stderr, "malloc failure: %s\n", strerror(errno));
     exit(1);
 
   }
@@ -216,8 +285,8 @@ c3_d u2_kafk_push(c3_w kafk_rawlen_w, c3_w *   kafk_raw_w)
   memcpy(kafk_msg_w, & header_u, sizeof(header_u));
   memcpy(kafk_msg_w + sizeof(header_u), kafk_raw_w, kafk_rawlen_w);
 
-  if (rd_kafka_produce(u2K->topic_handle_u, 
-                       RD_KAFKA_PARTITION_UA,
+  if (rd_kafka_produce(u2K->topic_prod_handle_u, 
+                       WRITE_PARTITION,
                        RD_KAFKA_MSG_F_COPY,
                        /* Payload and length */
                        kafk_msg_w,
@@ -230,26 +299,18 @@ c3_d u2_kafk_push(c3_w kafk_rawlen_w, c3_w *   kafk_raw_w)
                        NULL) == -1) {
     fprintf(stderr,
             "%% Failed to produce to topic %s partition %i: %s\n",
-            rd_kafka_topic_name(u2K->topic_handle_u), RD_KAFKA_PARTITION_UA,
+            rd_kafka_topic_name(u2K->topic_prod_handle_u), WRITE_PARTITION,
             rd_kafka_err2str(
                              rd_kafka_errno2err(errno)));
-    rd_kafka_poll(u2K->kafka_handle_u, 0);
+    rd_kafka_poll(u2K->kafka_prod_handle_u, 0);
   }
 
 
   free(kafk_msg_w);
 
-  clock_t after = clock();
-  float diff = ((float)after - (float)before) / (CLOCKS_PER_SEC * 1000);   
-
-  // printf("before : %f\n",(float) before);   
-  // printf("after : %f\n", (float) after);   
-  // printf("duration : %f\n",diff);   
-
-  /* Wait for messages to be delivered */
   // NOTFORCHECKIN - do we want this here?  I think we want to rip it out
-  while (rd_kafka_outq_len(u2K->kafka_handle_u) > 0) {
-    rd_kafka_poll(u2K->kafka_handle_u, 100);
+  while (rd_kafka_outq_len(u2K->kafka_prod_handle_u) > 0) {
+    rd_kafka_poll(u2K->kafka_prod_handle_u, 100);
   }
   
   return(u2A->ent_d);
@@ -263,7 +324,7 @@ c3_d u2_kafk_push(c3_w kafk_rawlen_w, c3_w *   kafk_raw_w)
 // return:
 //    * id of log msg
 c3_d
-u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo)
+u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
 {
   u2_noun ron;
   c3_d    bid_d;
@@ -282,7 +343,7 @@ u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo)
   len_w = u2_cr_met(5, ron);
   bob_w = c3_malloc(len_w * 4L);
   u2_cr_words(0, len_w, bob_w, ron);
-  bid_d = u2_kafk_push(bob_w, len_w);
+  bid_d = u2_kafk_push(bob_w, len_w, msg_type_y);
 
   u2z(ron);  
          
@@ -293,20 +354,29 @@ void u2_kafka_down()
 {
   if (! u2_Host.ops_u.kaf_c) { return ; }
 
-  /* Destroy the handle */
-  rd_kafka_destroy(u2K->kafka_handle_u);
+  // Destroy the handles
+  rd_kafka_destroy(u2K->kafka_prod_handle_u);
+  rd_kafka_destroy(u2K->kafka_cons_handle_u);
 
 
   /* Let background threads clean up and terminate cleanly. */
   rd_kafka_wait_destroyed(2000);
-}
 
-void u2_kafka_log_to_kafka()
-{
 
 }
 
-void u2_kafka_kafka_to_log()
+// admin:
+//   convert egz to kafka
+void u2_kafka_admin_egz_to_kafka()
 {
-  
+  fprintf(stderr, "u2_kafka_admin_egz_to_kafka() unimplemented");
+  exit(1);
+}
+
+// admin:
+//   convert kafka to egz
+void u2_kafka_admin_kafka_to_egz()
+{
+  fprintf(stderr, "u2_kafka_admin_kafka_to_egz() unimplemented");
+  exit(1);
 }

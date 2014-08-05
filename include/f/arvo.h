@@ -36,6 +36,7 @@
         c3_w    kno_w;                    //  kernel stage
         c3_w    rno_w;                    //  rotor index (always 0)
         c3_d    ent_d;                    //  event counter
+        c3_d    kaf_d;                    //  kafka number (loaded from checkpt at boot, then incrementing)
 
         u2_noun yot;                      //  new toy system
         u2_noun now;                      //  current time, as noun

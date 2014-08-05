@@ -217,7 +217,10 @@
       typedef struct _u2_save {
         uv_timer_t  tim_u;                  //  checkpoint timer
         uv_signal_t sil_u;                  //  child signal
+
         c3_d        ent_d;                  //  event number (loaded from checkpt at boot, then incrementing)
+        c3_d        kaf_d;                  //  kafka number (loaded from checkpt at boot, then incrementing)
+
         c3_w        pid_w;                  //  pid of checkpoint process
       } u2_save;
 
@@ -487,19 +490,27 @@
     /* u2_kafk: kafka / egz.hope state
     */
       typedef struct _u2_kafk {
-		rd_kafka_t *           kafka_handle_u;
-		rd_kafka_topic_t *     topic_handle_u;
+		rd_kafka_t *           kafka_prod_handle_u;
+		rd_kafka_t *           kafka_cons_handle_u;
+
+		rd_kafka_topic_t *     topic_prod_handle_u;
+		rd_kafka_topic_t *     topic_cons_handle_u;
+
 		uv_thread_t            egz_consolidator_thread_u;
       } u2_kafk;
 
     /* u2_kafk: kafka message header (one at front of each logged message)
     */
       typedef struct _u2_kafk_msg_header {
-		c3_y   kafka_msg_format_version_y;
+
+		c3_y   kafka_msg_format_version_y;  // Aug 2014: version 1
 		c3_y   kafka_msg_type_y;            // 0 = precommit; 1 = commit
-		c3_y   reserved_3_y;
-		c3_y   reserved_4_y;
+		c3_d   ent_d;                       // event number
+
       } u2_kafk_msg_header;
+
+     #define KAFK_MSG_PRECOMMIT  0
+     #define KAFK_MSG_POSTCOMMIT 1
 
 
     /* u2_opts: command line configuration.
