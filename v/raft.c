@@ -1620,7 +1620,7 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
       cor = u2k(u2t(u2t(nug)));
 
       u2z(nug);
-      _raft_sure_guard(rec_u, ovo, vir, cor);
+      _raft_sure_guard(rec_u, ovo, vir, cor, c3_false);
     }
   }
   //  uL(fprintf(uH, "punk oot %s\n", txt_c));
