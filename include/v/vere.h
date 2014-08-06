@@ -487,9 +487,10 @@
       } u2_rnam;
 
 
-    /* u2_kafk: kafka / egz.hope state
+    /* u2_kafk: kafka state
     */
       typedef struct _u2_kafk {
+		c3_t                   inited_t;
 		rd_kafka_t *           kafka_prod_handle_u;
 		rd_kafka_t *           kafka_cons_handle_u;
 
@@ -497,6 +498,9 @@
 		rd_kafka_topic_t *     topic_cons_handle_u;
 
 		uv_thread_t            egz_consolidator_thread_u;
+
+		c3_ds                  largest_offset_seen_ds;  // not our sequence number; kafka's sequence number
+
       } u2_kafk;
 
     /* u2_kafk: kafka message header (one at front of each logged message)

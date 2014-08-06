@@ -889,6 +889,13 @@ _sist_rest(u2_reck* rec_u)
 
   // (4) the log contains info that is new to us. Read it! Use it!
   //
+
+  exit(-1); // the next few lines are UNIMPLEMENTED  // NOTFORCHECKIN
+  // we need to:
+  //   * read through all events
+  //   * replay the committed ones
+  //   * keep track of the uncommitted ones and run these under a longer timer
+
   u2_noun rou = roe;
   c3_w    xno_w;
 

@@ -1609,14 +1609,14 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
     u2_noun nug;
 
     u2z(gon);
-    nug = u2_reck_nick(rec_u, vir, cor);  // <---- TJIC looks at side effects do we need to do any event transformations
+    nug = u2_reck_nick(rec_u, vir, cor);  // <---- TJIC event transformations can happen here
 
     if ( u2_blip != u2h(nug) ) {
       u2_noun why = u2k(u2h(nug));
       u2_noun tan = u2k(u2t(nug));
 
       u2z(nug);
-      _raft_lame(rec_u, ovo, why, tan);
+      _raft_lame(rec_u, ovo, why, tan);  // <---- TJIC event transformations can happen here
     }
     else {
       vir = u2k(u2h(u2t(nug)));
