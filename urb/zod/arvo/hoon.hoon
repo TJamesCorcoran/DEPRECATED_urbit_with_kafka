@@ -635,6 +635,11 @@
   |*  [a=(unit) b=*]
   ?~(a b u.a)
 ::
+++  lift                                                ::  lift gate (fmap)
+  |*  a=gate                                            ::  flipped
+  |*  b=(unit)                                          ::  curried
+  (bind b a)                                            ::  bind
+::
 ++  mate                                                ::  choose
   |*  [a=(unit) b=(unit)]
   ?~  b
@@ -649,7 +654,7 @@
     !!
   u.a
 ::
-++  some                                                ::  lift
+++  some                                                ::  lift (pure)
   |*  a=*
   [~ u=a]
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1504,16 +1509,32 @@
            (pro:te:fl b p [s==(s.n s.m) e=(dif:si (dif:si e.n e.m) (sun:si 1)) a=c])
 
   ++  lte  |=  [n=[s=? e=@s a=@u] m=[s=? e=@s a=@u]]  ^-  ?
-           ?:  (^lte e.n e.m)
+           ?:  =(%.n n)
+             ?:  =(%.n m)
+               ?:  &(=(e.n a.n) =(a.n a.m))
+                 %.y
+               !$(s.n %.y, s.m %.y)
              %.y
-           ?:  (^gth e.n e.m)
+           ?:  =(%.y m)
+             %.n
+           ?:  =(-1 (cmp:si e.n e.m))
+             %.y
+           ?:  =(--1 (cmp:si e.n e.m))
              %.n
            (^lte a.n a.m)
 
   ++  lth  |=  [n=[s=? e=@s a=@u] m=[s=? e=@s a=@u]]  ^-  ?
-           ?:  (^lth e.n e.m)
+           ?:  =(%.n n)
+             ?:  =(%.n m)
+               ?:  &(=(e.n a.n) =(a.n a.m))
+                 %.n
+               !$(s.n %.y, s.m %.y)
              %.y
-           ?:  (^gth e.n e.m)
+           ?:  =(%.y m)
+             %.n
+           ?:  =(-1 (cmp:si e.n e.m))
+             %.y
+           ?:  =(--1 (cmp:si e.n e.m))
              %.n
            (^lth a.n a.m)
 
@@ -1527,51 +1548,55 @@
 ++  rd                                                  ::  core for @rd
   ~%  %rd  +  ~
   |%
+  ++  mlen  52                                          ::  mantissa bits
+  ++  elen  11                                          ::  exponent bits
+  ++  bias  1.023                                       ::  exponent bias
+  ++  dlen  14                                          ::  ~=log_10(2^mlen)
   ::  Convert a sign/exp/ari cell into 64 bit atom
   ++  bit  |=  a=[s=? e=@s a=@u]
-           =+  a2=(lia:fl 52 a.a)
+           =+  a2=(lia:fl mlen a.a)
            =+  b=(ira:fl a2)
            ::=+  c=(lsh 0 (^sub 52 (met 0 b)) b)
            %+  can  0
-           [[52 b] [[11 (abs:si (sum:si (sun:si 1.023) e.a))] [[1 `@`s.a] ~]]]
+           [[mlen b] [[elen (abs:si (sum:si (sun:si bias) e.a))] [[1 `@`s.a] ~]]]
   ::  Sign of an @rd
   ++  sig  |=  [a=@rd]  ^-  ?
-           =(0 (rsh 0 63 a))
+           =(0 (rsh 0 (^add mlen elen) a))
   ::  Exponent of an @rd
   ++  exp  |=  [a=@rd]  ^-  @s
-           (dif:si (sun:si (rsh 0 52 (end 0 63 a))) (sun:si 1.023))
+           (dif:si (sun:si (rsh 0 mlen (end 0 (^add elen mlen) a))) (sun:si bias))
   ::  Fraction of an @rd (binary)
   ++  fac  |=  [a=@rd]  ^-  @u
-           (fre:fl 14 (sea a))
+           (fre:fl dlen (sea a))
   ::  Whole
   ++  hol  |=  [a=@rd]  ^-  @u
-           (hol:fl 52 (sea a))
+           (hol:fl mlen (sea a))
   ::  Convert to sign/exp/ari form
   ++  sea  |=  a=@rd  ^-  [s=? e=@s a=@u]
-           (pro:te:fl 1.023 52 [s=(sig a) e=(exp a) a=(ari:fl 52 (end 0 52 a))])
+           (pro:te:fl bias mlen [s=(sig a) e=(exp a) a=(ari:fl mlen (end 0 mlen a))])
   ++  err  |=  a=@rd  ^-  (unit tape)
-           (err:te:fl 1.023 52 (sea a))
+           (err:te:fl bias mlen (sea a))
 
   ::::::::::::
   ++  sun  ~/  %sun
            |=  a=@u  ^-  @rd
-           (bit (cof:fl 52 1.023 %.y a 0 0 ~))
+           (bit (cof:fl mlen bias %.y a 0 0 ~))
 
   ++  add  ~/  %add
            |=  [a=@rd b=@rd]  ^-  @rd
-           (bit (add:fl 1.023 52 (sea a) (sea b)))
+           (bit (add:fl bias mlen (sea a) (sea b)))
 
   ++  sub  ~/  %sub
            |=  [a=@rd b=@rd]  ^-  @rd
-           (bit (sub:fl 1.023 52 (sea a) (sea b)))
+           (bit (sub:fl bias mlen (sea a) (sea b)))
 
   ++  mul  ~/  %mul
            |=  [a=@rd b=@rd]  ^-  @rd
-           (bit (mul:fl 1.023 52 (sea a) (sea b)))
+           (bit (mul:fl bias mlen (sea a) (sea b)))
 
   ++  div  ~/  %div
            |=  [a=@rd b=@rd]  ^-  @rd
-           (bit (div:fl 1.023 52 (sea a) (sea b)))
+           (bit (div:fl bias mlen (sea a) (sea b)))
 
   ++  lte  ~/  %lte
            |=  [a=@rd b=@rd]  ^-  ?
@@ -1600,7 +1625,7 @@
            b
 
   ++  bex  |=  a=@s  ^-  @rd
-           (bit [s=%.y e=a a=(ari:fl 52 0)])
+           (bit [s=%.y e=a a=(ari:fl mlen 0)])
   
   ++  ipow  |=  [exp=@s n=@rd]
             ^-  @rd
@@ -1738,6 +1763,16 @@
   --
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::                section 2cI, almost macros            ::
+::
+++  cury
+  |*  [a=_|=(^ _*) b=*]
+  |*  c=_+<+.a
+  (a b c)
+::
+++  curr
+  |*  [a=_|=(^ _*) c=*]
+  |*  b=_+<+.a
+  (a b c)
 ::
 ++  hard
   |*  han=$+(* *)
@@ -2392,7 +2427,9 @@
   |=  nail  ^+  (sef)
   =+  [har tap]=[p q]:+<
   =+  lev=(fil 3 (dec q.har) ' ')
-  =+  roq=((star ;~(pose prn ;~(sfix (just `@t`10) (jest lev)))) har tap)
+  =+  eol=(just `@t`10)
+  =+  =-  roq=((star ;~(pose prn ;~(sfix eol (jest lev)) -)) har tap)
+      ;~(simu ;~(plug eol eol) eol)
   ?~  q.roq  roq
   =+  vex=(sef har(q 1) p.u.q.roq)
   =+  fur=p.vex(q (add (dec q.har) q.p.vex))
@@ -2792,7 +2829,10 @@
                (ifix [soq soq] (boss 256 (more gon qit)))
              ==
              %-  inde  %+  ifix
-               [;~(plug soqs (just `@`10)) ;~(plug (just `@`10) soqs)]
+               :-  ;~  plug  soqs
+                     ;~(pose ;~(plug (plus ace) vul) (just '\0a'))
+                   ==
+               ;~(plug (just '\0a') soqs)
              (boss 256 (star qat))
          ==
 ::
@@ -4271,7 +4311,7 @@
     =+  ben=$(fol b.fol)
     ?.  ?=(%0 -.ben)  ben
     ?>(?=(^ p.ben) $(sub -.p.ben, fol +.p.ben))
-::    ?>(?=(^ p.ben) $([sub fol] p.ben)
+    ::?>(?=(^ p.ben) $([sub fol] p.ben)
   ::
       [3 b=*]
     =+  ben=$(fol b.fol)
@@ -9868,7 +9908,7 @@
         %pass
       ~?  &(!lac !=(%$ p.gum))
         :^  %pass  [p.gum p.q.r.gum]
-          p.r.gum
+          [(,@tas +>-.q.q.r.gum) p.r.gum]
         q.gum
       [p.q.r.gum ~ [[p.gum p.r.gum] q.gum] q.q.r.gum]
     ::

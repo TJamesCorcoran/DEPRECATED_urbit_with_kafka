@@ -195,14 +195,12 @@ _unix_fs_event_cb(uv_fs_event_t* was_u,
 #endif
 
   // uL(fprintf(uH, "fs: %s in %s\n", pax_c, nod_u->pax_c));
-  u2_lo_open();
   {
     while ( nod_u ) {
       nod_u->dry = u2_no;
       nod_u = (u2_unod*) nod_u->par_u;
     }
   }
-  u2_lo_shut(u2_yes);
 }
 
 /* _unix_file_watch(): create file tracker (from filesystem)
@@ -742,6 +740,7 @@ _unix_dir_ankh_file(u2_noun pam, u2_noun wib, u2_noun baw, u2_noun woz)
   }
   return pam;
 }
+
 /* _unix_dir_ankh(): resolve directory to new style ankh.
 */
 static u2_noun
@@ -809,6 +808,78 @@ _unix_desk_peek(u2_noun hox,
   }
 }
 
+/* _unix_ankh_sing_map(): compare ankh maps for u2_ankh_sing().
+*/
+static u2_bean _unix_ankh_sing_in(u2_noun, u2_noun);
+
+static u2_bean
+_unix_ankh_sing_map(u2_noun mun, u2_noun mur)           //  retain
+{
+  u2_noun n_mun, l_mun, r_mun;
+  u2_noun n_mur, l_mur, r_mur;
+
+  if ( (u2_nul == mun) && (u2_nul == mur) ) { return u2_yes; }
+  if ( (u2_nul == mun) || (u2_nul == mur) ) { return u2_no; }
+
+  u2_cx_trel(mun, &n_mun, &l_mun, &r_mun);
+  u2_cx_trel(mur, &n_mur, &l_mur, &r_mur);
+
+  if ( (u2_no == (u2_sing(u2h(n_mun), u2h(n_mur)))) ||
+       (u2_no == _unix_ankh_sing_in(u2t(n_mun), u2t(n_mur))) ||
+       (u2_no == _unix_ankh_sing_map(l_mun, l_mur)) ||
+       (u2_no == _unix_ankh_sing_map(r_mun, r_mur)) ) 
+  {
+    return u2_no;
+  } else return u2_yes;
+}
+
+/* _unix_node_sing(): test node equality.
+*/
+static u2_bean
+_unix_node_sing(u2_noun xud, u2_noun bud)
+{
+  if ( (u2_nul == xud) && (u2_nul == bud) ) { return u2_yes; }
+  if ( (u2_nul == xud) || (u2_nul == bud) ) { return u2_no; }
+
+  return u2_sing(u2t(u2t(xud)), u2t(u2t(bud)));
+}
+
+/* _unix_ankh_sing_in(): stupid ankh test which ignores broken hash.
+*/
+static u2_bean
+_unix_ankh_sing_in(u2_noun xun, u2_noun bur)               //  retain
+{
+  u2_noun p_xun, q_xun, r_xun;
+  u2_noun p_bur, q_bur, r_bur;
+
+  u2_cx_trel(xun, &p_xun, &q_xun, &r_xun);
+  u2_cx_trel(bur, &p_bur, &q_bur, &r_bur);
+
+  if ( u2_no == _unix_node_sing(q_xun, q_bur) ) {
+    return u2_no;
+  }
+  return _unix_ankh_sing_map(r_xun, r_bur);
+}
+
+/* _unix_ankh_sing(): full ankh compare.
+*/
+static u2_bean
+_unix_ankh_sing(u2_noun xun, u2_noun bur)                 //  retain
+{
+  if ( u2_yes == u2_sing(xun, bur) ) {
+    return u2_yes;
+  } else {
+    if ( u2_no == _unix_ankh_sing_in(xun, bur) ) {
+      // fprintf(stderr, "uas: no, no (%x, %x)\r\n", u2_mug(xun), u2_mug(bur));
+      return u2_no;
+    }
+    else {
+      // fprintf(stderr, "uas: no, yes\r\n");
+      return u2_yes;
+    }
+  }
+}
+
 /* _unix_desk_sync_into(): sync external changes to desk.
 */
 static void
@@ -822,11 +893,13 @@ _unix_desk_sync_into(u2_noun  who,
   xun = _unix_dir_ankh(dir_u);
   bur = _unix_desk_peek(hox, u2k(syd), u2k(u2A->wen));
 
-  if ( u2_no == u2_sing(xun, bur) ) {
+  if ( (u2_no == u2_sing(u2h(xun), u2h(bur)))) //&&
+  //     (u2_no == _unix_ankh_sing(xun, bur)) )
+  {
     doz = u2_dc("cost", xun, bur);
 
     pax = u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul);
-    fav = u2nq(c3__into, who, syd, u2nt(u2_yes, u2_nul, doz));
+    fav = u2nq(c3__into, who, syd, u2nc(u2_yes, doz));
 
     u2_reck_plan(u2A, pax, fav);
   }
@@ -1117,7 +1190,7 @@ _unix_desk_sync_soba(u2_udir* dir_u, u2_noun doz)
   u2_noun zod = u2t(doz);
 
   while ( u2_nul != zod ) {
-    _unix_desk_sync_tako(dir_u, u2k(u2h(u2h(zod))), u2k(u2t(u2t(u2h(zod)))));
+    _unix_desk_sync_tako(dir_u, u2k(u2h(u2h(zod))), u2k(u2t(u2h(zod))));
     zod = u2t(zod);
   }
   u2z(doz);
@@ -1175,8 +1248,7 @@ u2_unix_ef_init(u2_noun who)
   u2_reck_plan(u2A, u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul),
                     u2nq(c3__into, who,
                                    u2_blip,
-                                   u2nq(u2_yes, u2_nul,
-                                                u2nc(0, 0), u2_nul)));
+                                   u2nt(u2_yes, u2nc(0, 0), u2_nul)));
 }
 
 /* u2_unix_ef_ergo(): update filesystem, outbound.
