@@ -44,6 +44,10 @@ clock_t before;
 
 static void _kafka_msg_delivered_cb (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque);
 
+//--------------------
+//  init functions
+//--------------------
+
 void u2_kafk_init()
 {
   
@@ -73,9 +77,6 @@ void u2_kafk_init()
     fprintf(stderr, "%% Failed to create consumer: %s\n", errstr);
     exit(1);
   }
-
-
-
 
   // 2) Add brokers.  These were specified on the command line.
   if (rd_kafka_brokers_add(u2K->kafka_prod_handle_u, u2_Host.ops_u.kaf_c) == 0) {
@@ -112,177 +113,9 @@ void u2_kafk_init()
   u2K->inited_t = c3_true;
 }
 
-// Prepare for reading.   
-// 
-//    Call this once, specifying the offset - the KAFKA offset, not the ovum message number!
-//
-void u2_kafk_pre_read(c3_d offset_d)
-{
-  if (u2K->inited_t != c3_true){ 
-    fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
-  }
-
-  if (rd_kafka_consume_start(u2K->topic_cons_handle_u, 
-                             READ_PARTITION,
-                             offset_d ) == -1){
-    fprintf(stderr, "%% Failed to start consuming: %s\n",
-            rd_kafka_err2str(rd_kafka_errno2err(errno)));
-    exit(1);
-  }
-}
-
-// deal with kafka-specific details of reading: kafka error codes, etc.
-// boil it down to two  things:
-//   success: yes or no?
-//   payload: via return args
-//
-c3_t _kafk_read_internal(rd_kafka_message_t *rkmessage, 
-                         c3_y* buf_y, // return arg
-                         c3_l* len_l,
-                         c3_l  maxlen_l)
-{
-  if (rkmessage->err) {
-    if (rkmessage->err == RD_KAFKA_RESP_ERR__PARTITION_EOF) {
-      fprintf(stderr,
-              "%% Consumer reached end of %s [%"PRId32"] "
-              "message queue at offset %"PRId64"\n",
-              rd_kafka_topic_name(rkmessage->rkt),
-              rkmessage->partition, rkmessage->offset);
-
-      return(c3_false);
-    }
-
-    fprintf(stderr, "%% Consume error for topic \"%s\" [%"PRId32"] "
-            "offset %"PRId64": %s\n",
-            rd_kafka_topic_name(rkmessage->rkt),
-            rkmessage->partition,
-            rkmessage->offset,
-            rd_kafka_message_errstr(rkmessage));
-    return(c3_false);
-  }
-
-  fprintf(stdout, "%% Message (offset %"PRId64", %zd bytes):\n", rkmessage->offset, rkmessage->len);
-
-  if (rkmessage->len > maxlen_l) {
-    fprintf(stderr, "kafk: message from kafka log too big for read buffer");
-    return (c3_false);
-  }
-  *len_l = rkmessage->len;
-  memcpy(buf_y, rkmessage->payload, maxlen_l);
-
-  return(c3_true);
-}
-
-// Read one kafka message and return the payload and some header info from it.
-//
-//
-// Which one?  You don't get to specify - that falls out from where
-// you started the consumption sequence via u2_kafk_pre_read()
-//
-c3_t u2_kafk_read_one(c3_d * ent_d,            // return arg
-                      c3_y * kafka_msg_type_y, // return arg
-
-                      c3_y * buf_c,            // return arg
-                      c3_w * len_w,            // return arg
-                      c3_w   maxlen_w)            
-{
-  if (u2K->inited_t != c3_true){ 
-    fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
-  }
-
-  rd_kafka_message_t *rkmessage;
-
-  // Consume single message.
-  // See rdkafka_performance.c for high speed consuming of messages. 
-  rkmessage = rd_kafka_consume(u2K->topic_cons_handle_u, READ_PARTITION, 1000);
-  if (NULL == rkmessage){
-    fprintf(stderr, "kafk_read() failed: %s\n", strerror(errno));
-    exit(1);
-  }
-
-  c3_y raw_msg_y[2048];
-  c3_w raw_msg_len;
-
-  c3_t success = _kafk_read_internal(rkmessage, raw_msg_y, &raw_msg_len, 2048);
-  if (success != c3_true){
-    fprintf(stderr, "kafk_read() failed");
-    exit(1);
-  }
-
-  rd_kafka_message_destroy(rkmessage);
-
-  // POST-CONDITION: 
-  //    raw_msg_y contains:
-  //      * a u2_kafk_msg_header
-  //      * the msg
-
-  u2_kafk_msg_header header_u;
-  memcpy(& header_u, raw_msg_y, sizeof(u2_kafk_msg_header));
-
-  if (header_u.kafka_msg_format_version_y != 1){
-    fprintf(stderr, "kafk: read gave version != 1");
-    exit(1);
-  }
-  if ((header_u.kafka_msg_type_y != KAFK_MSG_PRECOMMIT) &&
-      (header_u.kafka_msg_type_y != KAFK_MSG_POSTCOMMIT)) {
-    fprintf(stderr, "kafk: illegal message type");
-    exit(1);
-  }
-
-  c3_w actual_msg_len_w = raw_msg_len - sizeof(u2_kafk_msg_header);
-  if (actual_msg_len_w  > maxlen_w){
-    fprintf(stderr, "kafk: message payload exceeds bufffer size");
-    exit(1);
-  }
-
-  // success: return payload and metadata
-  *ent_d            = header_u.ent_d;
-  *kafka_msg_type_y = header_u.kafka_msg_type_y;
-  *len_w            = actual_msg_len_w;
-  memcpy(buf_c, raw_msg_y + sizeof(u2_kafk_msg_header), actual_msg_len_w);
-
-  return(c3_true);
-}
-
-u2_noun u2_kafk_read_all(u2_reck* rec_u,  u2_bean *  ohh)
-{
-  if (u2K->inited_t != c3_true){ 
-    fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
-  }
-
-
-  int run = 1;
-
-
-  while (run) {
-    // NOTFORCHECKIN
-  }
-
-  // Stop consuming
-  //     Note that we only consume at startup, so, yes, this is correct.
-  //
-  rd_kafka_consume_stop(u2K->topic_cons_handle_u, READ_PARTITION);
-
-  exit(-1); // NOTFORCHECKIN - unimplemented!
-  u2_noun uglyhack_u = (u2_noun) malloc(sizeof(u2_noun));
-  return(uglyhack_u);
-}
-
-#define U2_KAFK_VERSION 1
-
-void u2_kafk_commit()
-{
-// NOTFORCHECKIN
-}
-
-void u2_kafk_decommit()
-{
-  // NOTFORCHECKIN
-}
-
+//--------------------
+//  write functions
+//--------------------
 
 // Message push callback
 //    gets invoked once our pushed message is in the system.
@@ -301,9 +134,9 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk, const rd_kafka_message_t *r
   }
   else {
     if (rkmessage->offset > u2K->largest_offset_seen_ds){
-      fprintf(stderr, "kafk: OK     CB in order. Old: %lli ; New: %lli \n", u2K->largest_offset_seen_ds, rkmessage->offset );      
+      fprintf(stderr, "kafk: OK     CB in order. Old: %lli ; New: %lli \n", (long long int) u2K->largest_offset_seen_ds,  (long long int) rkmessage->offset );      
     } else {
-      fprintf(stderr, "kafk: WARN!! CB out of order. Old: %lli ; New: %lli \n", u2K->largest_offset_seen_ds, rkmessage->offset );      
+      fprintf(stderr, "kafk: WARN!! CB out of order. Old: %lli ; New: %lli \n", (long long int) u2K->largest_offset_seen_ds, (long long int)  rkmessage->offset );      
     }
 
     u2K->largest_offset_seen_ds = rkmessage->offset;
@@ -321,30 +154,12 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk, const rd_kafka_message_t *r
 // return:
 //     * sequence #
 //
-c3_d u2_kafk_push(c3_y * kafk_raw_y, c3_w kafk_rawlen_w, c3_y msg_type_y)
+c3_d u2_kafk_push(c3_y * msg_y, c3_w len_w, c3_y msg_type_y)
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
     exit(-1);
   }
-
-  // prepend our header
-  //
-  u2_kafk_msg_header header_u;
-  header_u.kafka_msg_format_version_y = 1;
-  header_u.kafka_msg_type_y           = KAFK_MSG_PRECOMMIT;
-  header_u.ent_d                      = u2A->ent_d++; // sequence number
-
-  c3_w     payload_len_w = sizeof(u2_kafk_msg_header) + kafk_rawlen_w;
-  c3_y *   payload_msg_y = malloc(payload_len_w);
-  if (payload_msg_y == NULL){
-    fprintf(stderr, "malloc failure: %s\n", strerror(errno));
-    exit(1);
-
-  }
-
-  memcpy(payload_msg_y, & header_u, sizeof(header_u));
-  memcpy(payload_msg_y + sizeof(header_u), kafk_raw_y, kafk_rawlen_w);
 
   // send the message
   //
@@ -352,8 +167,8 @@ c3_d u2_kafk_push(c3_y * kafk_raw_y, c3_w kafk_rawlen_w, c3_y msg_type_y)
                        WRITE_PARTITION,
                        RD_KAFKA_MSG_F_COPY,
                        /* Payload and length */
-                       payload_msg_y,
-                       payload_len_w,
+                       msg_y,
+                       len_w,
                        /* Optional key and its length */
                        NULL, 0,
                        /* Message opaque, provided in
@@ -367,9 +182,6 @@ c3_d u2_kafk_push(c3_y * kafk_raw_y, c3_w kafk_rawlen_w, c3_y msg_type_y)
                              rd_kafka_errno2err(errno)));
     rd_kafka_poll(u2K->kafka_prod_handle_u, 0);
   }
-
-
-  free(payload_msg_y);
 
   // NOTFORCHECKIN - do we want this here?  I think we want to rip it out
   while (rd_kafka_outq_len(u2K->kafka_prod_handle_u) > 0) {
@@ -389,29 +201,168 @@ c3_d u2_kafk_push(c3_y * kafk_raw_y, c3_w kafk_rawlen_w, c3_y msg_type_y)
 c3_d
 u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
 {
-  u2_noun ron;
-  c3_d    bid_d;
 
-  // serialize
-  ron = u2_cke_jam(u2nc(u2k(rec_u->now), ovo));
-  c3_assert(rec_u->key);
+  c3_w   malloc_w;   // space for header AND payload
+  c3_w   len_w;      // length of payload
+  c3_y * data_y;     
 
-  // encrypt
-  ron = u2_dc("en:crua", u2k(rec_u->key), ron);
+  // convert into bytes, w some padding up front for the header
+  u2_clog_o2b(ovo, & malloc_w, & len_w, & data_y);
 
-  // copy data to raft_bob_w, manage ref counts
-  c3_w    len_w;
-  c3_w*   bob_w;
+  // write the header in place
+  u2_clog_write_prefix((u2_clpr *) data_y, u2A->ent_d++, msg_type_y, len_w, data_y + sizeof(u2_clpr));
+  
+  c3_d bid_d = u2_kafk_push( data_y, malloc_w, msg_type_y);
 
-  len_w = u2_cr_met(5, ron);
-  bob_w = c3_malloc(len_w * 4L);
-  u2_cr_words(0, len_w, bob_w, ron);
-  bid_d = u2_kafk_push( (c3_y *) bob_w, len_w, msg_type_y);
 
-  u2z(ron);  
-         
   return(bid_d);
 }
+
+//--------------------
+//  read functions
+//--------------------
+
+
+// Prepare for reading.   
+// 
+//    Call this once, specifying the offset - the KAFKA offset, not the ovum message number!
+//
+void u2_kafk_pre_read(c3_d offset_d)
+{
+  if (u2K->inited_t != c3_true){ 
+    fprintf(stderr, "kafk: must init first\n"); 
+    exit(-1);
+  }
+
+  if (rd_kafka_consume_start(u2K->topic_cons_handle_u, 
+                             READ_PARTITION,
+                             offset_d ) == -1){
+    fprintf(stderr, "%% Failed to start consuming: %s\n", rd_kafka_err2str(rd_kafka_errno2err(errno)));
+    exit(-1);
+  }
+}
+
+
+// Read one kafka message and return the payload and some header info from it.
+//
+//
+// Which one?  You don't get to specify - that falls out from where
+// you started the consumption sequence via u2_kafk_pre_read()
+//
+c3_t u2_kafk_pull_one(c3_d * ent_d,            // return arg
+                      c3_y * msg_type_y,       // return arg
+                      c3_w * len_w,            // return arg
+                      c3_y ** buf_y)           // return arg
+            
+{
+  if (u2K->inited_t != c3_true){ 
+    fprintf(stderr, "kafk: must init first\n"); 
+    exit(-1);
+  }
+
+  rd_kafka_message_t *rkmessage;
+
+  // (1) Consume single message.
+  //     See rdkafka_performance.c for high speed consuming of messages. 
+  rkmessage = rd_kafka_consume(u2K->topic_cons_handle_u, READ_PARTITION, 1000);
+  if (NULL == rkmessage){
+    fprintf(stderr, "kafk_read() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+
+  // (2) check error messages
+  if (rkmessage->err != RD_KAFKA_RESP_ERR_NO_ERROR) {
+    fprintf(stderr, "kafk error: %s\n", rd_kafka_err2str(rkmessage->err));
+    return(c3_false);
+  }
+
+  // (3) pull out our event prefix
+  //
+  if (rkmessage->len < sizeof(u2_clpr)){
+    fprintf(stderr, "kafk error: too small for event prefix\n");
+    return(c3_false);
+  }
+
+  u2_clpr * clog_u = (u2_clpr *) rkmessage->payload;
+  c3_t ret_t = u2_clog_check_prefix(clog_u);
+  if (c3_true != ret_t){
+    return(c3_false);
+  }
+
+  // (4) pull out our message
+  *len_w = clog_u->len_w;
+  *buf_y = (c3_y *) malloc(*len_w);
+  memcpy(* buf_y, rkmessage->payload + sizeof(u2_clpr), *len_w);
+  
+
+  // success: return payload and metadata
+  *ent_d            = clog_u->ent_d;
+  *msg_type_y       = clog_u->msg_type_y;
+
+  rd_kafka_message_destroy(rkmessage);
+
+  return(c3_true);
+}
+
+// Read ova from kafka.
+//
+// input args:
+//    * rec_u -
+//    * ohh   - 
+// output args:
+//    * ohh   - ???
+//
+// return:
+//    * first read noun, which is a cell structure, which means that later we can iterate over it by using
+//      u2h() and u2t().  All reading from kafka should be done in this func!
+//
+c3_t u2_kafk_pull_one_ova(c3_d    * ent_d,  
+                          c3_y    * msg_type_y,
+                          u2_noun * ovo)
+{
+  if (u2K->inited_t != c3_true){ 
+    fprintf(stderr, "kafk: must init first\n"); 
+    exit(-1);
+  }
+
+  // 4) pull from log
+  c3_y * payload_y;
+  c3_w payload_len_w;
+
+  c3_t success=  u2_kafk_pull_one(ent_d,            
+                                  msg_type_y, 
+                                  & payload_len_w,
+                                  & payload_y); 
+  if (c3_false == success){
+    return(c3_false);
+  }
+
+  u2_clog_b2o(payload_len_w, payload_y, ovo);
+
+  return(c3_true);
+}
+
+u2_noun  u2_kafk_pull_all(u2_reck* rec_u,  u2_bean *  ohh)
+{
+  // NOTFORCHECKIN - unimplemented
+}
+
+#define U2_KAFK_VERSION 1
+
+void u2_kafk_commit()
+{
+// NOTFORCHECKIN
+}
+
+void u2_kafk_decommit()
+{
+  // NOTFORCHECKIN
+}
+
+//--------------------
+//  shutdown functions
+//--------------------
+
 
 void u2_kafka_down()
 {

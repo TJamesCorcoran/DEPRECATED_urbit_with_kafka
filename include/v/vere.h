@@ -258,13 +258,6 @@
         } fut;
       } u2_utat;
 
-    /* u2_ulog: unix event log.
-    */
-      typedef struct {
-        c3_i fid_i;                         //  file descriptor
-        c3_d len_d;                         //  length in words
-      } u2_ulog;
-
       struct _u2_uhot;
       struct _u2_udir;
       struct _u2_ufil;
@@ -424,12 +417,40 @@
         u2_raty_lead
       } u2_raty;
 
+    /* u2_ulog: egzh log.
+    */
+      typedef struct {
+        c3_i w_fid_i;                       //  write descriptor
+        c3_i r_fid_i;                       //  read  file descriptor
+
+        c3_d len_d;                         //  length in words
+		uv_thread_t egz_consolidator_thread_u;  // Consolidator runs in thread. This is handle.
+
+      } u2_ulog;
+
+
+    /* u2_kafk: kafka log
+    */
+      typedef struct _u2_kafk {
+		c3_t                   inited_t;
+		rd_kafka_t *           kafka_prod_handle_u;
+		rd_kafka_t *           kafka_cons_handle_u;
+
+		rd_kafka_topic_t *     topic_prod_handle_u;
+		rd_kafka_topic_t *     topic_cons_handle_u;
+
+		c3_ds                  largest_offset_seen_ds;  // not our sequence number; kafka's sequence number
+
+      } u2_kafk;
+
+
     /* u2_raft: raft state.
     */
       typedef struct {
         uv_tcp_t         wax_u;             //  TCP listener
         uv_timer_t       tim_u;             //  election/heartbeat timer
-        u2_ulog          lug_u;             //  event log
+        u2_ulog          lug_u;             //  egz
+                                            //     FIXME: it would be nice to move the global kafk in here!!!
         c3_d             ent_d;             //  last log index
         c3_w             lat_w;             //  last log term
         u2_raty          typ_e;             //  server type
@@ -486,35 +507,6 @@
         u2_bean          vog;               //  did they vote for us?
       } u2_rnam;
 
-
-    /* u2_kafk: kafka state
-    */
-      typedef struct _u2_kafk {
-		c3_t                   inited_t;
-		rd_kafka_t *           kafka_prod_handle_u;
-		rd_kafka_t *           kafka_cons_handle_u;
-
-		rd_kafka_topic_t *     topic_prod_handle_u;
-		rd_kafka_topic_t *     topic_cons_handle_u;
-
-		uv_thread_t            egz_consolidator_thread_u;
-
-		c3_ds                  largest_offset_seen_ds;  // not our sequence number; kafka's sequence number
-
-      } u2_kafk;
-
-    /* u2_kafk: kafka message header (one at front of each logged message)
-    */
-      typedef struct _u2_kafk_msg_header {
-
-		c3_y   kafka_msg_format_version_y;  // Aug 2014: version 1
-		c3_y   kafka_msg_type_y;            // 0 = precommit; 1 = commit
-		c3_d   ent_d;                       // event number
-
-      } u2_kafk_msg_header;
-
-     #define KAFK_MSG_PRECOMMIT  0
-     #define KAFK_MSG_POSTCOMMIT 1
 
 
     /* u2_opts: command line configuration.

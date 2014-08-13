@@ -25,7 +25,7 @@
 #define C3_GLOBAL
 #include "all.h"
 #include "v/vere.h"
-#include "v/kafk.h" // NOTFORCHECKIN
+#include "v/kafk.h"
 
 
 /**  Legacy fixed jet linkage.  Destroy me please.
@@ -438,51 +438,6 @@ main(c3_i   argc,
   }
 
   u2_lo_grab("main", u2_none);
-
-  // NOTFORCHECKIN ------------------------------ begin
-  u2_kafk_init();
-  c3_y * msg_1_c= (c3_y * ) "hello world";
-  c3_d ent_1_d = u2_kafk_push(  msg_1_c, strlen( (char * )msg_1_c), KAFK_MSG_PRECOMMIT);
-  
-  c3_ds start_kafka_offset = u2K->largest_offset_seen_ds;
-
-  c3_y * msg_2_c= (c3_y *) "message two";
-  c3_d ent_2_d = u2_kafk_push( msg_2_c, strlen( (char * )msg_2_c), KAFK_MSG_POSTCOMMIT);
-
-  printf("ent 1 #: %lli\n", ent_1_d);
-  printf("ent 2 #: %lli\n", ent_2_d);
-
-  u2_kafk_pre_read(start_kafka_offset);
-
-  c3_c msg_c[2048];
-  c3_l len_l;
-  c3_d ent_d;           
-  c3_y kafka_msg_type_y;
-
-  c3_t success = u2_kafk_read_one(& ent_d, & kafka_msg_type_y, msg_c, &len_l, 2048);
-  if (success != c3_true){
-    printf("error read 1");
-  } else {
-    printf("ent: %d\n", ent_d);
-    printf("kfk type: %i\n",  kafka_msg_type_y);
-    printf("msg len:  %li\n", len_l);
-    printf("msg:      %s\n",  msg_c);
-  }
-
-  success = u2_kafk_read_one(& ent_d, & kafka_msg_type_y, msg_c, &len_l, 2048);
-  if (success != c3_true){
-    printf("error");
-  } else {
-    printf("ent: %d\n", ent_d);
-    printf("kfk type: %i\n",  kafka_msg_type_y);
-    printf("msg len:  %li\n", len_l);
-    printf("msg:      %s\n",  msg_c);
-  }
-
-  exit(0);
-  // NOTFORCHECKIN  ------------------------------ end
-
-
 
   // booted in admin mode: do a task, then exit
   // booted in user mode: do command loop

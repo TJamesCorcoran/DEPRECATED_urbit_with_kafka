@@ -42,7 +42,7 @@ ifeq ($(OS),osx)
   OSLIBS=-framework CoreServices -framework CoreFoundation
 endif
 ifeq ($(OS),linux)
-  OSLIBS=-lpthread -lrt -lcurses 
+  OSLIBS=-lpthread -lrt -lcurses -lz
   DEFINES=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 endif
 ifeq ($(OS),bsd)
@@ -283,8 +283,8 @@ V_OFILES=\
        v/egzh.o \
        v/http.o \
        v/kafk.o \
+       v/clog.o \
        v/loop.o \
-       v/main.o \
        v/raft.o \
        v/reck.o \
        v/save.o \
@@ -294,11 +294,25 @@ V_OFILES=\
        v/unix.o \
        v/walk.o
 
+MAIN_FILE =\
+       v/main.o 
+
+TEST_FILE =\
+       test/test.o 
+
 VERE_OFILES=\
        $(BASE_OFILES) \
        $(CRE2_OFILES) \
        $(OUT_OFILES) \
-       $(V_OFILES)
+       $(V_OFILES) \
+       $(MAIN_FILE)
+
+TEST_OFILES=\
+       $(BASE_OFILES) \
+       $(CRE2_OFILES) \
+       $(OUT_OFILES) \
+       $(V_OFILES) \
+       $(TEST_FILE)
 
 LIBUV=outside/libuv/libuv.a
 
@@ -313,6 +327,8 @@ LIBANACHRONISM=outside/anachronism/build/libanachronism.a
 BPT_O=outside/bpt/bitmapped_patricia_tree.o
 
 all: $(BIN)/vere
+
+test: $(BIN)/test
 
 $(LIBUV):
 	$(MAKE) -C outside/libuv libuv.a
@@ -341,6 +357,10 @@ $(V_OFILES) f/loom.o f/trac.o: include/v/vere.h
 $(BIN)/vere: $(LIBCRE) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBKAFKACLIENT)
 	mkdir -p $(BIN)
 	$(CLD) $(CLDOSFLAGS) -o $(BIN)/vere $(VERE_OFILES) $(LIBUV) $(LIBKAFKACLIENT) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBS)
+
+$(BIN)/test: $(LIBCRE) $(TEST_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBKAFKACLIENT)
+	mkdir -p $(BIN)
+	$(CLD) $(CLDOSFLAGS) -o $(BIN)/test $(TEST_OFILES) $(LIBUV) $(LIBKAFKACLIENT) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBS)
 
 tags:
 	ctags -R -f .tags --exclude=root

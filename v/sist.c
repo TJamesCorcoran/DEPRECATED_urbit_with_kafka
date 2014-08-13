@@ -30,67 +30,6 @@
 #endif
 
 
-/* u2_sist_pack(): write a blob to disk, transferring.
-*/
-c3_d
-u2_sist_pack(u2_reck* rec_u, c3_w tem_w, c3_w typ_w, c3_w* bob_w, c3_w len_w)
-{
-  //  printf("XXX %i, %i, %i, %i\n", rec_u, tem_w, typ_w, len_w);
-
-  u2_ulog* lug_u = &u2R->lug_u;
-  c3_d     tar_d;
-  u2_ular  lar_u;
-
-  tar_d = lug_u->len_d + len_w;
-
-  lar_u.tem_w = tem_w;
-  lar_u.typ_w = typ_w;
-  lar_u.syn_w = u2_cr_mug((c3_w)tar_d);
-  lar_u.mug_w = u2_cr_mug_both(u2_cr_mug_words(bob_w, len_w),
-                               u2_cr_mug_both(u2_cr_mug(lar_u.tem_w),
-                                              u2_cr_mug(lar_u.typ_w)));
-  lar_u.ent_d = rec_u->ent_d;
-  rec_u->ent_d++;
-  lar_u.len_w = len_w;
-
-  if ( -1 == lseek64(lug_u->fid_i, 4ULL * tar_d, SEEK_SET) ) {
-    perror("lseek");
-    uL(fprintf(uH, "sist_pack: seek failed\n"));
-    c3_assert(0);
-  }
-  if ( sizeof(lar_u) != write(lug_u->fid_i, &lar_u, sizeof(lar_u)) ) {
-    perror("write");
-    uL(fprintf(uH, "sist_pack: write failed\n"));
-    c3_assert(0);
-  }
-  if ( -1 == lseek64(lug_u->fid_i, 4ULL * lug_u->len_d, SEEK_SET) ) {
-    perror("lseek");
-    uL(fprintf(uH, "sist_pack: seek failed\n"));
-    c3_assert(0);
-  }
-#if 0
-  uL(fprintf(uH, "sist_pack: write %llu, %llu: lar ent %llu, len %d, mug %x\n",
-                 lug_u->len_d,
-                 tar_d,
-                 lar_u.ent_d,
-                 lar_u.len_w,
-                 lar_u.mug_w));
-#endif
-  if ( (4 * len_w) != write(lug_u->fid_i, bob_w, (4 * len_w)) ) {
-    perror("write");
-    uL(fprintf(uH, "sist_pack: write failed\n"));
-    c3_assert(0);
-  }
-  lug_u->len_d += (c3_d)(lar_u.len_w + c3_wiseof(lar_u));
-  free(bob_w);
-
-  //  Sync.  Or, what goes by sync.
-  {
-    fsync(lug_u->fid_i);    //  fsync is almost useless, F_FULLFSYNC too slow
-  }
-
-  return rec_u->ent_d;
-}
 
 /* u2_sist_put(): moronic key-value store put.
 */
@@ -375,12 +314,12 @@ void u2_sist_get_egz_quick_dirstr(c3_c * str_w, int len_w)
 }
 
 
-void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_w sequence_w)
+void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_d sequence_d, c3_y msgtype_y)
 {
   c3_c    pier_c[2048];  
   u2_sist_get_pier_dirstr(pier_c, 2048);
 
-  snprintf(str_w, len_w, "%s/.urb/egz_quick/%i", pier_c, sequence_w);  
+  snprintf(str_w, len_w, "%s/.urb/egz_quick/%lli.%i", pier_c, (long long int) sequence_d, msgtype_y);  
 }
 
 
@@ -434,7 +373,7 @@ void u2_sist_get_ship_dirstr(c3_c* buf_c, // return arg
                                     /urbit.pill
                                     /zod
  */
-static void
+void
 _sist_home(u2_reck* rec_u)
 {
   c3_c    base_c[2048];
@@ -754,7 +693,8 @@ _sist_home(u2_reck* rec_u)
 
   /* _sist_zest(): create a new, empty record.
    */
-  static void
+//  static
+ void
     _sist_zest(u2_reck* rec_u)
   {
     // struct stat buf_b;
@@ -828,9 +768,9 @@ _sist_rest(u2_reck* rec_u)
   c3_d        kaf_d = rec_u->kaf_d;
   c3_d        las_d = 0;
   u2_bean     ohh = u2_no;
-  u2_uled     led_u;
+  u2_eghd     led_u;
 
-  c3_t kafk_b = u2_Host.ops_u.kaf_c;
+  c3_t kafk_b = (u2_Host.ops_u.kaf_c != NULL);
 
   // (1) diagnostic print out for humans
   //
@@ -865,9 +805,9 @@ _sist_rest(u2_reck* rec_u)
   u2_noun     roe = u2_nul;
 
   if (kafk_b) {
-    roe = u2_kafk_read_all(rec_u, & ohh);
+    roe = u2_kafk_pull_all(rec_u, & ohh);
   } else {
-    roe = u2_egz_read_all(rec_u, fid_i, & ohh);
+    roe = u2_egz_pull_all(rec_u, fid_i, & ohh);
   }
 
   if ( u2_nul == roe ) {

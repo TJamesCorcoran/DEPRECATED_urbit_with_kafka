@@ -8,29 +8,13 @@
          void u2_sist_get_pill_filestr(c3_c * str_w, int len_w);
          void u2_sist_get_egz_filestr(c3_c* buf_c, int len_c);
          void u2_sist_get_egz_quick_dirstr(c3_c * str_w, int len_w);
-         void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_w sequence_w);
+         void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_d sequence_d, c3_y msgtype_y);
          void u2_sist_get_chkpt_filestr(c3_c* fil_c, c3_c* suf_c, c3_c* buf_c, int len_c);
 
       /* u2_sist_boot(): restore or create pier from disk.
       */
         void
         u2_sist_boot(void);
-
-      /* u2_sist_pack(): write a log entry to disk.
-      **
-      ** XX Synchronous.
-      **
-      ** typ_w is a mote describing the entry type: %ov for Arvo
-      ** logs, %ra for Raft events.
-      **
-      ** Returns the entry's sequence number.
-      */
-        c3_d
-        u2_sist_pack(u2_reck* rec_u,
-                     c3_w tem_w,
-                     c3_w typ_w,
-                     c3_w* bob_w,
-                     c3_w len_w);
 
       /* u2_sist_put(): moronic key-value store put.
       **

@@ -452,7 +452,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
   red_i += sizeof(c3_d);
 
   if ( msg_u->len_d < 4 ) {
-    uL(fprintf(uH, "raft: length too short (a) %llu\n", msg_u->len_d));
+    uL(fprintf(uH, "raft: length too short (a) %llu\n", ( unsigned long long int) msg_u->len_d));
     return -1;
   }
 
@@ -463,7 +463,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
   }
 
   if ( ben_d < red_i + 2 * sizeof(c3_w) ) {
-    uL(fprintf(uH, "raft: length too short (b) %llu\n", msg_u->len_d));
+    uL(fprintf(uH, "raft: length too short (b) %llu\n", (unsigned long long int) msg_u->len_d));
     return -1;
   }
   memcpy(&msg_u->tem_w, buf_u->buf_y + red_i, sizeof(c3_w));
@@ -478,7 +478,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
     }
     case c3__rasp: {
       if ( ben_d < red_i + sizeof(c3_w) ) {
-        uL(fprintf(uH, "raft: length too short (c) %llu\n", msg_u->len_d));
+        uL(fprintf(uH, "raft: length too short (c) %llu\n", ( unsigned long long int)msg_u->len_d));
         return -1;
       }
       memcpy(&msg_u->rasp.suc_w, buf_u->buf_y + red_i, sizeof(c3_w));
@@ -487,7 +487,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
     }
     case c3__apen: case c3__revo: {
       if ( ben_d < red_i + sizeof(c3_d) + 2 * sizeof(c3_w) ) {
-        uL(fprintf(uH, "raft: length too short (d) %llu\n", msg_u->len_d));
+        uL(fprintf(uH, "raft: length too short (d) %llu\n", ( unsigned long long int)msg_u->len_d));
         return -1;
       }
       memcpy(&msg_u->rest.lai_d, buf_u->buf_y + red_i, sizeof(c3_d));
@@ -498,7 +498,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
       red_i += sizeof(c3_w);
 
       if ( ben_d < red_i + 4 * msg_u->rest.nam_w ) {
-        uL(fprintf(uH, "raft: length too short (e) %llu\n", msg_u->len_d));
+        uL(fprintf(uH, "raft: length too short (e) %llu\n", ( unsigned long long int)msg_u->len_d));
         return -1;
       }
       msg_u->rest.nam_c = c3_malloc(4 * msg_u->rest.nam_w);
@@ -511,7 +511,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
 
   if ( c3__apen == msg_u->typ_w ) {
     if ( ben_d < red_i + 2 * sizeof(c3_d) ) {
-      uL(fprintf(uH, "raft: length too short (f) %llu\n", msg_u->len_d));
+      uL(fprintf(uH, "raft: length too short (f) %llu\n", ( unsigned long long int)msg_u->len_d));
       red_i = -1;
       goto fail;
     }
@@ -528,7 +528,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
 
       for ( i_d = 0; i_d < msg_u->rest.apen.ent_d; i_d++ ) {
         if ( ben_d < red_i + 3 * sizeof(c3_w) ) {
-          uL(fprintf(uH, "raft: length too short (g) %llu\n", msg_u->len_d));
+          uL(fprintf(uH, "raft: length too short (g) %llu\n", ( unsigned long long int)msg_u->len_d));
           red_i = -1;
           goto fail;
         }
@@ -539,7 +539,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
         memcpy(&ent_u[i_d].len_w, buf_u->buf_y + red_i, sizeof(c3_w));
         red_i += sizeof(c3_w);
         if ( ben_d < red_i + 4 * ent_u[i_d].len_w ) {
-          uL(fprintf(uH, "raft: length too short (h) %llu\n", msg_u->len_d));
+          uL(fprintf(uH, "raft: length too short (h) %llu\n", ( unsigned long long int)msg_u->len_d));
           red_i = -1;
           goto fail;
         }
@@ -551,7 +551,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
   }
 
   if ( red_i != ben_d ) {
-    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", (long int) red_i, ben_d));
+    uL(fprintf(uH, "raft: sizes don't match r:%ld w:%llu\n", (long int) red_i, ( unsigned long long int)ben_d));
     red_i = -1;
     goto fail;
   }
@@ -1765,9 +1765,9 @@ u2_raft_work(u2_reck* rec_u)
           egg_u->vir = vir;
 
           if(u2_Host.ops_u.kaf_c){
-            bid_d = u2_egz_push_ova(rec_u, ovo);
+            bid_d = u2_kafk_push_ova(rec_u, ovo, LOG_MSG_PRECOMMIT);  
           } else {
-            bid_d = u2_kafk_push_ova(rec_u, ovo, KAFK_MSG_PRECOMMIT);  
+            bid_d = u2_egz_push_ova(rec_u, ovo, LOG_MSG_PRECOMMIT);
           }
 
           // ...and  here we're putting the log ID # in it
