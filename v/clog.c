@@ -60,20 +60,19 @@ void u2_clog_o2b(u2_noun ovo,
 // bytes -> ovum
 //
 // input:
-//    * len
-//    * data
+//    * len  - len of raw ovum data ; DO NOT INCLUDE EVENT HEADER
+//    * data -        raw ovum data ; DO NOT INCLUDE EVENT HEADER
 // output:
 //    * ovo
 void u2_clog_b2o(c3_w   len_w, 
                  c3_y * data_y,
                  u2_noun * ovo)
 {
-  c3_y * payload_data_y  = data_y + sizeof(u2_clpr);
 
   // 3) turn bytes ->noun
   u2_noun ron;
 
-  ron = u2_ci_bytes(len_w, payload_data_y);  
+  ron = u2_ci_bytes(len_w, data_y);  
 
   // 2) decrypt
   c3_assert(u2_Host.arv_u->key);

@@ -123,9 +123,19 @@ c3_t _dequeue(c3_d * ret_d, c3_y * msgtype_y)
 //
 void u2_egz_rm()
 {
+  // delete egz.hope
   c3_c    ful_c[2048];  
   u2_sist_get_egz_filestr(ful_c, 2048);
   unlink(ful_c);
+
+  // delete all quickfiles
+  u2_sist_get_egz_quick_dirstr(ful_c, 2048);
+  c3_c    exec_c[2048];
+  sprintf(exec_c, "exec rm -rf %s/*", ful_c);
+  if (system(exec_c) < 0){
+    fprintf(stderr, "u2_egz_rm() failed\n");
+    exit(-1);
+  }
 }
 
 // Create a new egz file w default header
@@ -402,7 +412,7 @@ void u2_egz_pull_start()
 c3_t u2_egz_pull_one(c3_d *  ent_d,                         //  event sequence number
                      c3_y *  msg_type_y,                    //  0 = precommit; 1 = commit
                      c3_w *  len_w,                         //  word length of this event
-                     c3_y ** bob_y)                         //  data
+                     c3_y ** data_y)                         //  data
 {
   u2_clpr eventprefix_u;
 
@@ -417,9 +427,9 @@ c3_t u2_egz_pull_one(c3_d *  ent_d,                         //  event sequence n
   *len_w      = eventprefix_u.len_w;
 
   // now that we know the size, read the actual log msg
-  *bob_y = (c3_y *) malloc(eventprefix_u.len_w);
+  *data_y = (c3_y *) malloc(eventprefix_u.len_w);
   
-  if ( *len_w != read(u2R->lug_u.r_fid_i, *bob_y, *len_w) ) {  
+  if ( *len_w != read(u2R->lug_u.r_fid_i, *data_y, *len_w) ) {  
     fprintf(stderr, "u2_egz_pull_one() failed - read message\n");
     return(c3_false);
   }
@@ -499,9 +509,11 @@ u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,   u2_bean *  ohh)
 // write
 //----------
 
-// Quickly bytes to an egz mini file.
+// Quickly write bytes to an egz mini file.
 //
-// Note that we will consolidate these mini files later in the consolidator thread.
+// Note:
+//    * we will consolidate these mini files later in the consolidator thread.
+//    * does NOT write a u2_clpr event header: this just writes bytes
 // 
 // inputs:
 //   * raf_u - pointer to raft state structure (pass in global 'u2A')
@@ -524,16 +536,7 @@ u2_egz_push(c3_y* data_y, c3_w len_w, c3_d seq_d, c3_y msgtype_y)
     fprintf(stderr, "egz_push() failed - fopen - %s\n", strerror(errno));
     exit(1);
   }
-  u2_clpr prefix_u;
-  u2_clog_write_prefix(& prefix_u, seq_d, msgtype_y, len_w, data_y);
-  c3_w actual_len_w = write(fid_i, & prefix_u, sizeof(u2_clpr));
-  if (actual_len_w == -1 ){
-    fprintf(stderr, "egz_push() failed - write - %s\n", strerror(errno));
-    exit(1);
-  }
-
-  actual_len_w = write(fid_i, data_y, len_w);
-  if (actual_len_w == -1 ){
+  if (write(fid_i, data_y, len_w) < len_w){
     fprintf(stderr, "egz_push() failed - write - %s\n", strerror(errno));
     exit(1);
   }
@@ -708,14 +711,14 @@ u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
   u2_clog_o2b(ovo, &malloc_w, & len_w, & data_y);
 
   // 2) write prefix into padding
-  c3_d seq_d = u2A->ent_d++;
   u2_clpr * eventprefix_u = (u2_clpr *) data_y;
+  c3_d seq_d = u2A->ent_d++;
   eventprefix_u->ent_d = seq_d;
   eventprefix_u->len_w = len_w;
   eventprefix_u->msg_type_y = msg_type_y;
 
   // 3) log
-  _egz_push_in_thread(data_y, len_w, seq_d, ovo, msg_type_y );
+  _egz_push_in_thread(data_y, malloc_w, seq_d, ovo, msg_type_y );
 
   return(seq_d);
 }
@@ -857,7 +860,6 @@ void _egz_consolidator(void *arg)
   } // while(1)
 }
 
-
 void u2_egz_init()
 {
   fprintf(stdout, "egzh: egz.hope logging begin\n");
@@ -871,7 +873,7 @@ void u2_egz_init()
   uv_thread_create(& u2R->lug_u.egz_consolidator_thread_u,
                    & _egz_consolidator,
                    NULL);
-  fprintf(stdout, "egzh: primary thread\n");
+
 }
 
 void u2_egz_shutdown()

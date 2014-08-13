@@ -147,7 +147,9 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk, const rd_kafka_message_t *r
 }
 
 
-
+// Note:
+//    * does NOT write a u2_clpr event header: this just writes bytes
+//
 // input:
 //     * data
 //     * datalen

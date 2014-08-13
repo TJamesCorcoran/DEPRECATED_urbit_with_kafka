@@ -160,7 +160,7 @@ u2_loop_signal_memory()
 
 /* _lo_init(): initialize I/O across the process.
 */
-static void
+void
 _lo_init()
 {
   u2_unix_io_init();
