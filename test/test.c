@@ -812,7 +812,6 @@ void run_tests()
   // WORKS test_clog_unclog();
   // WORKS test_kafka_logging_bytes();
   // BROKEN test_kafka_logging_ova();
-
   // WORKS test_egz_bytes();
   test_egz_ova();
 
