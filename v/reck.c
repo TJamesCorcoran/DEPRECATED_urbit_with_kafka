@@ -1,4 +1,4 @@
-2/* v/reck.c
+/* v/reck.c
 **
 **  This file is in the public domain.
 */
