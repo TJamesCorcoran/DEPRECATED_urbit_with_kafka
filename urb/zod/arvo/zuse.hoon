@@ -493,6 +493,14 @@
   ?:  =(~ t.myn)  (trip i.myn)
   (weld (trip i.myn) `tape`['/' $(myn t.myn)])
 ::
+++  perk                                                ::  pars cube fork
+  |*  a=(pole ,@tas)
+  ?~  a  fail
+  ;~  pose 
+    (cold -.a (jest -.a))
+    $(a +.a)
+  ==
+::
 ++  poja                                                ::  parse JSON
   |%
   ++  apex                                              ::  JSON object
@@ -1097,7 +1105,7 @@
   ::
   ::
   ::
-  ++  zerg                                                ::  fundamental diff op
+  ++  zerg                                                ::  fundamental diff
     |=  [p=yaki q=yaki]
     ^-  (map path miso)
     %+  roll  (~(tap in (luth q.p q.q)) ~)
