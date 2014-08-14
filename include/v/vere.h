@@ -439,7 +439,9 @@
 		rd_kafka_topic_t *     topic_prod_handle_u;
 		rd_kafka_topic_t *     topic_cons_handle_u;
 
-		c3_ds                  largest_offset_seen_ds;  // not our sequence number; kafka's sequence number
+		// not our sequence number; kafka's sequence number
+		c3_ds                  largest_offset_seen_ds;         // largest overall
+		c3_ds                  largest_offset_seen_precom_ds;  // largest precommit msg id (for testing, mostly)
 
       } u2_kafk;
 

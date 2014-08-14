@@ -8,7 +8,7 @@
 void u2_kafk_init(void);
 
 // push (write)
-c3_d u2_kafk_push(c3_y *   raw_y, c3_w kafk_len_w, c3_y msg_type_y);
+void u2_kafk_push(c3_y *   raw_y, c3_w kafk_len_w, clog_thread_baton * baton_u);
 c3_d u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y);
 
 

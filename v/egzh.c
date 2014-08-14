@@ -556,19 +556,6 @@ u2_egz_push(c3_y* data_y, c3_w len_w, c3_d seq_d, c3_y msgtype_y)
 
 }
 
-// For speed we hop from thread to thread to thread.
-// We need to carry our data w us.
-// This is our basket.
-//
-typedef struct _egz_push_data_s
-{
-  c3_y*       bob_y;
-  c3_w        len_w;
-  c3_d        seq_d;
-  c3_y        msg_type_y;  // yes, this is also stored in the header. Cleaner this way, IMO.
-  u2_noun     ovo;
-  uv_thread_t push_thread_u;
-} egz_push_data;
 
 
 // Q: what happens when we've written the minifile?
@@ -577,11 +564,11 @@ typedef struct _egz_push_data_s
 //
 void _egz_finalize_and_emit(uv_async_t* async_u, int status_w)
 {
-  egz_push_data *  push_data_u = (egz_push_data *) async_u->data;
+  clog_thread_baton *  clog_baton_u = (clog_thread_baton *) async_u->data;
   
 
-  if (push_data_u->msg_type_y != LOG_MSG_PRECOMMIT){
-    fprintf(stderr, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) push_data_u->seq_d);
+  if (clog_baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
+    fprintf(stderr, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) clog_baton_u->seq_d);
     exit(-1);
   }
 
@@ -592,16 +579,16 @@ void _egz_finalize_and_emit(uv_async_t* async_u, int status_w)
   
   // this is a big of a hack: we're operating on data that sort of claims to be opaque to us.
   // ...but it's cool because We Know The Truth (tm)
-  u2_clpr * header_u = (u2_clpr *) push_data_u->bob_y;
+  u2_clpr * header_u = (u2_clpr *) clog_baton_u->bob_y;
   header_u -> msg_type_y = LOG_MSG_POSTCOMMIT;
 
-  _egz_push_in_thread(push_data_u->bob_y, 
-                      push_data_u->len_w,
-                      push_data_u->seq_d,
-                      push_data_u->ovo,
+  _egz_push_in_thread(clog_baton_u->bob_y, 
+                      clog_baton_u->len_w,
+                      clog_baton_u->seq_d,
+                      clog_baton_u->ovo,
                       LOG_MSG_POSTCOMMIT);
 
-  free(push_data_u); // NOTFORCHECKIN is this correct?
+  free(clog_baton_u); // NOTFORCHECKIN is this correct?
   free(async_u);
 }
 
@@ -612,23 +599,23 @@ void _egz_finalize_and_emit(uv_async_t* async_u, int status_w)
 void
 _egz_push_in_thread_inner(void * raw_u)
 {
-  egz_push_data * push_data_u = (egz_push_data *) raw_u;
+  clog_thread_baton * clog_baton_u = (clog_thread_baton *) raw_u;
 
   // push data. Might take a long time bc of flush()
   //
-  u2_egz_push(push_data_u->bob_y, 
-              push_data_u->len_w, 
-              push_data_u->seq_d,
-              push_data_u->msg_type_y);
+  u2_egz_push(clog_baton_u->bob_y, 
+              clog_baton_u->len_w, 
+              clog_baton_u->seq_d,
+              clog_baton_u->msg_type_y);
 
   // if this is a precommit, there's more to be done (emit side effects and log again)
   // if it's a post commit, there's not
-  if (LOG_MSG_POSTCOMMIT == push_data_u -> msg_type_y){
-    printf("egzh: 2nd logging complete for event %lli\n", (long long int) push_data_u->seq_d); // NOTFORCHECKIN
+  if (LOG_MSG_POSTCOMMIT == clog_baton_u -> msg_type_y){
+    printf("egzh: 2nd logging complete for event %lli\n", (long long int) clog_baton_u->seq_d); // NOTFORCHECKIN
 
     // this is the second and final time we log this message, therefore we're done w the space
     //
-    free(push_data_u->bob_y);
+    free(clog_baton_u->bob_y);
 
   } else {
 
@@ -655,14 +642,14 @@ _egz_push_in_thread_inner(void * raw_u)
                                async_u, 
                                &_egz_finalize_and_emit );
     if (ret_w < 0){
-      fprintf(stderr, "FATAL: unable to inject event into uv\n");
+      fprintf(stderr, "kafk: unable to inject event into uv\n");
       exit(-1);
     }
 
 
     // the data pack we created in libuv thread made it here to child
     // thread...and now will go back to libuv thread.
-    async_u->data = (void *) push_data_u;
+    async_u->data = (void *) clog_baton_u;
 
     // pull the trigger
     uv_async_send(async_u);
@@ -674,16 +661,16 @@ void
 _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_type_y)
 {
   
-  egz_push_data *  push_data_u = (egz_push_data *) malloc(sizeof(egz_push_data));
-  push_data_u->bob_y = bob_y;
-  push_data_u->len_w = len_w;
-  push_data_u->seq_d = seq_d;
-  push_data_u->ovo   = ovo;
-  push_data_u->msg_type_y = msg_type_y;
+  clog_thread_baton *  clog_baton_u = (clog_thread_baton *) malloc(sizeof(clog_thread_baton));
+  clog_baton_u->bob_y = bob_y;
+  clog_baton_u->len_w = len_w;
+  clog_baton_u->seq_d = seq_d;
+  clog_baton_u->ovo   = ovo;
+  clog_baton_u->msg_type_y = msg_type_y;
 
-  if (uv_thread_create(& push_data_u->push_thread_u,
+  if (uv_thread_create(& clog_baton_u->push_thread_u,
                        & _egz_push_in_thread_inner,
-                       push_data_u) < 0){
+                       clog_baton_u) < 0){
     fprintf(stderr, "egzh: unable to spawn thread for push\n");
     exit(-1);
   }
