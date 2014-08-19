@@ -486,7 +486,8 @@
     /* u2_rcon: raft connection.
     */
       typedef struct _u2_rcon {
-        uv_tcp_t         wax_u;             //  TCP handle
+        uv_tcp_t         wax_u;             //  TCP handle //NEW
+
         struct _u2_rnam* nam_u;             //  peer we're connected to
         u2_rbuf*         red_u;             //  read buffer
         u2_bean          red;               //  u2_yes on new data

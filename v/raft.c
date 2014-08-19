@@ -59,7 +59,7 @@ static void _raft_conn_dead(u2_rcon* ron_u);
 static u2_bean _raft_remove_run(u2_rcon* ron_u);
 static void _raft_send_rasp(u2_rcon* ron_u, c3_t suc_t);
 static void _raft_rreq_free(u2_rreq* req_u);
-static void _raft_time_cb(uv_timer_t* tim_u, c3_i sas_i);
+static void _raft_time_cb(uv_timer_t* tim_u);
 static void _raft_sure_guard(u2_reck* rec_u, u2_noun ovo, u2_noun vir, u2_noun cor, c3_t force_delay);
 
 static void
@@ -96,7 +96,7 @@ _raft_readname(const c3_c* str_c, c3_w siz_w)
   else {
     nam_w = col_c - nam_u->str_c + 1;
     nam_u->nam_c = c3_malloc(nam_w);
-    uv_strlcpy(nam_u->nam_c, nam_u->str_c, nam_w);
+    strncpy(nam_u->nam_c, nam_u->str_c, nam_w); // changed from strlcpy
     nam_u->por_c = strdup(col_c + 1);
   }
   return nam_u;
@@ -144,12 +144,16 @@ u2_raft_readopt(const c3_c* arg_c, c3_c* our_c, c3_s oup_s)
 
 /* _raft_alloc(): libuv-style allocator for raft.
 */
-static uv_buf_t
-_raft_alloc(uv_handle_t* had_u, size_t siz_i)
+static void
+_raft_alloc(uv_handle_t* had_u, 
+            size_t len_i,
+            uv_buf_t* buf
+            )
 {
-  uv_buf_t buf_u = { .base = c3_malloc(siz_i), .len = siz_i };
-  return buf_u;
+  void* ptr_v = c3_malloc(len_i);
+  *buf = uv_buf_init(ptr_v, len_i);
 }
+
 
 /* _raft_election_rand(): election timeout.
 */
@@ -502,8 +506,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
         return -1;
       }
       msg_u->rest.nam_c = c3_malloc(4 * msg_u->rest.nam_w);
-      uv_strlcpy(msg_u->rest.nam_c, (const char*)(buf_u->buf_y + red_i),
-                 4 * msg_u->rest.nam_w);
+      strncpy(msg_u->rest.nam_c, (const char*)(buf_u->buf_y + red_i), 4 * msg_u->rest.nam_w); // changed from uv_strlcpy
       red_i += 4 * msg_u->rest.nam_w;
       break;
     }
@@ -681,8 +684,7 @@ _raft_write_cb(uv_write_t* wri_u, c3_i sas_i)
   struct _u2_write_t* req_u = (struct _u2_write_t*)wri_u;
 
   if ( 0 != sas_i ) {
-    uL(fprintf(uH, "raft: write_cb: %s\n",
-                   uv_strerror(uv_last_error(u2L))));
+    uL(fprintf(uH, "raft: write_cb: ERROR\n"));
     _raft_conn_dead((u2_rcon*)wri_u->handle);
   }
   free(req_u->buf_y);
@@ -763,14 +765,15 @@ _raft_conn_work(u2_rcon* ron_u)
     buf_u.base = (char*)req_u->buf_y;
     buf_u.len = ron_u->wri_u->len_w;
 
-    if ( 0 != uv_write((uv_write_t*)req_u,
+    c3_w ret_w;
+    if ( 0 != (ret_w = uv_write((uv_write_t*)req_u,
                        (uv_stream_t*)&ron_u->wax_u,
                        &buf_u,
                        1,
-                       _raft_write_cb) )
+                                _raft_write_cb)) )
     {
       uL(fprintf(uH, "raft: conn_work (write): %s\n",
-                     uv_strerror(uv_last_error(u2L))));
+                     uv_strerror(ret_w)));
       free(req_u->buf_y);
       free(req_u);
     }
@@ -785,18 +788,14 @@ _raft_conn_work(u2_rcon* ron_u)
 static void
 _raft_conn_read_cb(uv_stream_t* tcp_u,
                    ssize_t      siz_i,
-                   uv_buf_t     buf_u)
+                   const uv_buf_t *     buf_u)
 {
   u2_rcon* ron_u = (u2_rcon*)tcp_u;
 
   u2_lo_open();
   {
     if ( siz_i < 0 ) {
-      uv_err_t las_u = uv_last_error(u2L);
-
-      if ( UV_EOF != las_u.code ) {
-        uL(fprintf(uH, "raft: read: %s\n", uv_strerror(las_u)));
-      }
+      uL(fprintf(uH, "raft: read ERROR"));
       _raft_conn_dead(ron_u);
     }
     else if ( siz_i == 0 ) {
@@ -804,14 +803,14 @@ _raft_conn_read_cb(uv_stream_t* tcp_u,
     }
     else {
       if ( u2_yes == ron_u->liv ) {
-        ron_u->red_u = _raft_rbuf_grow(ron_u->red_u, (c3_y*)buf_u.base, siz_i);
+        ron_u->red_u = _raft_rbuf_grow(ron_u->red_u, (c3_y*)buf_u->base, siz_i);
         ron_u->red = u2_yes;
         _raft_conn_work(ron_u);
       }
       else uL(fprintf(uH, "XX raft: read on dead conn %p\n", ron_u));
     }
   }
-  free(buf_u.base);
+  free(buf_u->base);
   u2_lo_shut(u2_no);
 }
 
@@ -972,8 +971,7 @@ _raft_listen_cb(uv_stream_t* str_u, c3_i sas_i)
   u2_raft* raf_u = (u2_raft*)str_u;
 
   if ( 0 != sas_i ) {
-    uL(fprintf(uH, "raft: listen_cb: %s\n",
-                   uv_strerror(uv_last_error(u2L))));
+    uL(fprintf(uH, "raft: listen_cb: ERROR\n"));
   }
   else {
     u2_rcon* ron_u = _raft_conn_new(raf_u);
@@ -981,8 +979,7 @@ _raft_listen_cb(uv_stream_t* str_u, c3_i sas_i)
     if ( 0 != uv_accept((uv_stream_t*)&raf_u->wax_u,
                         (uv_stream_t*)&ron_u->wax_u) )
     {
-      uL(fprintf(uH, "raft: accept: %s\n",
-                     uv_strerror(uv_last_error(u2L))));
+      uL(fprintf(uH, "raft: accept: ERROR\n"));
 
       uv_close((uv_handle_t*)&ron_u->wax_u, 0);
       free(ron_u);
@@ -1010,7 +1007,7 @@ _raft_connect_cb(uv_connect_t* con_u, c3_i sas_i)
 
   if ( 0 != sas_i ) {
     uL(fprintf(uH, "raft: connect_cb: %s\n",
-                   uv_strerror(uv_last_error(u2L))));
+                   uv_strerror(sas_i)));
     uv_close((uv_handle_t*)&ron_u->wax_u, _raft_conn_free);
   }
   else {
@@ -1043,11 +1040,11 @@ _raft_getaddrinfo_cb(uv_getaddrinfo_t* raq_u,
   for ( res_u = add_u; res_u; res_u = res_u->ai_next ) {
     if ( 0 != uv_tcp_connect(con_u,
                              &ron_u->wax_u,
-                             *(struct sockaddr_in*)res_u->ai_addr,
+                             (const struct sockaddr*)res_u->ai_addr,
                              _raft_connect_cb) )
     {
       uL(fprintf(uH, "raft: getaddrinfo_cb: %s\n",
-                     uv_strerror(uv_last_error(u2L))));
+                     uv_strerror(sas_i)));
       uv_close((uv_handle_t*)&ron_u->wax_u, 0);
       continue;
     }
@@ -1095,15 +1092,16 @@ _raft_conn_all(u2_raft* raf_u, void (*con_f)(u2_rcon* ron_u))
 
       raq_u->data = ron_u;
 
-      if ( 0 != uv_getaddrinfo(u2L,
+      int ret;
+      if ( 0 != (ret = uv_getaddrinfo(u2L,
                                raq_u,
                                _raft_getaddrinfo_cb,
                                nam_u->nam_c,
                                nam_u->por_c,
-                               &hit_u) )
+                                      &hit_u)) )
       {
         uL(fprintf(uH, "raft: getaddrinfo: %s\n",
-                       uv_strerror(uv_last_error(u2L))));
+                       uv_strerror(ret)));
 
         uv_close((uv_handle_t*)&ron_u->wax_u, 0);
         free(raq_u);
@@ -1158,7 +1156,7 @@ _raft_write_rest(u2_rcon* ron_u, c3_d lai_d, c3_w lat_w, u2_rmsg* msg_u)
   msg_u->rest.lat_w = lat_w;
   msg_u->rest.nam_w = 1 + strlen(raf_u->str_c) / 4;
   msg_u->rest.nam_c = calloc(1, 4 * msg_u->rest.nam_w);
-  uv_strlcpy(msg_u->rest.nam_c, raf_u->str_c, 4 * msg_u->rest.nam_w);
+  strncpy(msg_u->rest.nam_c, raf_u->str_c, 4 * msg_u->rest.nam_w); // changed from strlcpy
   msg_u->len_d += 4 + msg_u->rest.nam_w;
 }
 
@@ -1285,12 +1283,11 @@ _raft_heartbeat(u2_raft* raf_u)
 ** leaders.
 */
 static void
-_raft_time_cb(uv_timer_t* tim_u, c3_i sas_i)
+_raft_time_cb(uv_timer_t* tim_u)
 {
   u2_raft* raf_u = tim_u->data;
   //uL(fprintf(uH, "raft: time\n"));
 
-  c3_assert(sas_i == 0);
   switch ( raf_u->typ_e ) {
     default: {
       uL(fprintf(uH, "raft: time_cb: unknown server state\n"));
@@ -1392,18 +1389,23 @@ _raft_foll_init(u2_raft* raf_u)
 
   //  Bind the listener.
   {
-    struct sockaddr_in add_u = uv_ip4_addr("0.0.0.0", u2_Host.ops_u.rop_s);
+    struct sockaddr_in add_u; 
+    c3_w ret_w;
+    if (0 != (ret_w = uv_ip4_addr("0.0.0.0", u2_Host.ops_u.rop_s, &add_u ))){
+      uL(fprintf(uH, "raft: init: %s\n", uv_strerror(ret_w)));
+      c3_assert(0);
+    }
 
-    if ( 0 != uv_tcp_init(u2L, &raf_u->wax_u) ) {
-      uL(fprintf(uH, "raft: init: %s\n", uv_strerror(uv_last_error(u2L))));
+    if ( 0 != (ret_w = uv_tcp_init(u2L, &raf_u->wax_u)) ) {
+      uL(fprintf(uH, "raft: init: %s\n", uv_strerror(ret_w)));
       c3_assert(0);
     }
-    if ( 0 != uv_tcp_bind(&raf_u->wax_u, add_u) ) {
-      uL(fprintf(uH, "raft: bind: %s\n", uv_strerror(uv_last_error(u2L))));
+    if ( 0 != (ret_w = uv_tcp_bind(&raf_u->wax_u, (struct sockaddr *) & add_u, 0)) ) {
+      uL(fprintf(uH, "raft: bind: %s\n", uv_strerror(ret_w)));
       c3_assert(0);
     }
-    if ( 0 != uv_listen((uv_stream_t*)&raf_u->wax_u, 16, _raft_listen_cb) ) {
-      uL(fprintf(uH, "raft: listen: %s\n", uv_strerror(uv_last_error(u2L))));
+    if ( 0 != (ret_w = uv_listen((uv_stream_t*)&raf_u->wax_u, 16, _raft_listen_cb)) ) {
+      uL(fprintf(uH, "raft: listen: %s\n", uv_strerror(ret_w)));
       c3_assert(0);
     }
     else {
@@ -1631,33 +1633,33 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
 }
 
 
-static void
-_raft_comm(u2_reck* rec_u, c3_d bid_d)
-{
-  u2_cart* egg_u;
-
-  u2_lo_open();
-
-  egg_u = rec_u->ova.egg_u;
-  while ( egg_u ) {
-    if ( egg_u->ent_d <= bid_d ) {
-      egg_u->log = u2_yes;
-    } else break;
-    egg_u = egg_u->nex_u;
-  }
-  u2_lo_shut(u2_yes);
-}
-
+// static void
+// _raft_comm(u2_reck* rec_u, c3_d bid_d)
+// {
+//   u2_cart* egg_u;
+// 
+//   u2_lo_open();
+// 
+//   egg_u = rec_u->ova.egg_u;
+//   while ( egg_u ) {
+//     if ( egg_u->ent_d <= bid_d ) {
+//       egg_u->log = u2_yes;
+//     } else break;
+//     egg_u = egg_u->nex_u;
+//   }
+//   u2_lo_shut(u2_yes);
+// }
+// 
 // When we send something to raft w _raft_push(), we ask libuv to call us back later.
 // This is later.
-static void
-_raft_comm_cb(uv_timer_t* tim_u, c3_i sas_i)
-{
-  u2_raft* raf_u = tim_u->data;
-
-  _raft_comm(u2A, raf_u->ent_d);
-}
-
+// static void
+// _raft_comm_cb(uv_timer_t* tim_u, c3_i sas_i)
+// {
+//   u2_raft* raf_u = tim_u->data;
+// 
+//   _raft_comm(u2A, raf_u->ent_d);
+// }
+// 
 
 
 

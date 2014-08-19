@@ -39,3 +39,9 @@ void u2_egz_shutdown();
 // util
 u2_reck *  u2_egz_util_get_u2a();
 u2_kafk *  u2_egz_util_get_u2k();
+
+// admin
+void u2_egz_admin_dump_egz();
+
+// for devel / speed characterization purposes only
+void u2_egz_set_consolidator_cb(void (* egzh_cons_cb)(c3_d count_d, c3_d newbytes_d));

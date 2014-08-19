@@ -82,7 +82,9 @@ _main_getopt(c3_i argc, c3_c** argv)
     switch ( ch_i ) {
       case 'A': {
         u2_Host.ops_u.adm_c = strdup(optarg);
-        if ((strcmp(optarg, "ltok") != 0) && (strcmp(optarg, "ktol"))) {
+        if ((strcmp(optarg, "ltok") != 0) && 
+            (strcmp(optarg, "ktol") != 0) && 
+            (strcmp(optarg, "degz") != 0) ) {
           fprintf(stderr, "illegal -A subcommand: %s\n",  optarg);
           return u2_no;
 
@@ -229,6 +231,7 @@ u2_ve_usage(c3_i argc, c3_c** argv)
   fprintf(stderr, "       [-A command ]   // admin tool \n");
   fprintf(stderr, "                       // * ltok - read log, write it kafka \n");
   fprintf(stderr, "                       // * ktol - read kafka, write it log \n");
+  fprintf(stderr, "                       // * degz - dump egz to stdou \n");
 
   exit(1);
 }
@@ -444,6 +447,7 @@ main(c3_i   argc,
   if (u2_Host.ops_u.adm_c != 0){
     if (strcmp(u2_Host.ops_u.adm_c, "ltok") ==0) { u2_kafka_admin_egz_to_kafka(); }
     else if (strcmp(u2_Host.ops_u.adm_c, "ktol") ==0) { u2_kafka_admin_kafka_to_egz(); }
+    else if (strcmp(u2_Host.ops_u.adm_c, "degz") ==0) { u2_egz_admin_dump_egz(); }
     else  { fprintf(stderr, "unsupported admin mode command %s\n", u2_Host.ops_u.adm_c); exit(1); }
   } else {
     u2_lo_loop();

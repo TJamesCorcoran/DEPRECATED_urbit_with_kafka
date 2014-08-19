@@ -239,6 +239,7 @@ void u2_sist_get_pill_filestr(c3_c * str_w, int len_w)
 void u2_sist_get_pier_dirstr(c3_c * str_w, int len_w)
 {
     struct passwd *pw = getpwuid(getuid());
+    if (NULL == pw){ fprintf(stderr, "getpwuid failed\n"); exit(-1);     }
     const char *homedir = pw->pw_dir;
 
     // chop off tilda
@@ -305,21 +306,29 @@ void u2_sist_get_doturb_dirstr(c3_c * str_w, int len_w)
   snprintf(str_w, len_w, "%s/.urb", pier_c);  
 }
 
-void u2_sist_get_egz_quick_dirstr(c3_c * str_w, int len_w)
+// get the egz_quick directory
+//
+// Q: why does this have a different func signature than the others?
+// A: egzh stress tests: we need this to be QUICK
+//
+const c3_c * u2_sist_get_egz_quick_dirstr()
 {
-  c3_c    pier_c[2048];  
-  u2_sist_get_pier_dirstr(pier_c, 2048);
+  static c3_c * quick_c = NULL;
+  if (NULL == quick_c){
+    c3_c  pier_c[2048];  
+    u2_sist_get_pier_dirstr(pier_c, 2048);
 
-  snprintf(str_w, len_w, "%s/.urb/egz_quick", pier_c);  
+    quick_c = (c3_c *) malloc(2048);
+    sprintf(quick_c, "%s/.urb/egz_quick", pier_c);  
+  }
+  return(quick_c);
+
 }
 
 
 void u2_sist_get_egz_quick_filestr(c3_c * str_w, int len_w, c3_d sequence_d, c3_y msgtype_y)
 {
-  c3_c    pier_c[2048];  
-  u2_sist_get_pier_dirstr(pier_c, 2048);
-
-  snprintf(str_w, len_w, "%s/.urb/egz_quick/%lli.%i", pier_c, (long long int) sequence_d, msgtype_y);  
+  snprintf(str_w, len_w, "%s/%07lli.%i", u2_sist_get_egz_quick_dirstr(), (long long int) sequence_d, msgtype_y);  
 }
 
 
@@ -816,7 +825,7 @@ _sist_rest(u2_reck* rec_u)
     c3_assert(rec_u->ent_d == old_d);
     if ( las_d + 1 != old_d ) {
       uL(fprintf(uH, "checkpoint and log disagree! las:%llu old:%llu\n",
-                 las_d + 1, old_d));
+                 (long long unsigned int)las_d + 1, (long long unsigned int) old_d));
       uL(fprintf(uH, "Some events appear to be missing from the log.\n"
                  "Please contact the authorities, "
                  "and do not delete your pier!\n"));
@@ -839,7 +848,7 @@ _sist_rest(u2_reck* rec_u)
   u2_noun rou = roe;
   c3_w    xno_w;
 
-  uL(fprintf(uH, "rest: replaying through event %llu\n", las_d));
+  uL(fprintf(uH, "rest: replaying through event %llu\n", (long long unsigned int) las_d));
   fprintf(uH, "---------------- playback starting----------------\n");
 
   xno_w = 0;

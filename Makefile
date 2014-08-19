@@ -64,7 +64,7 @@ CFLAGS= -O0 -g -msse3 -ffast-math \
 	-I/usr/local/include \
 	-I/opt/local/include \
 	-I$(INCLUDE) \
-	-Ioutside/libuv/include \
+	-Ioutside/libuv_11/include \
 	-Ioutside/anachronism/include \
 	-Ioutside/bpt \
 	-Ioutside/re2 \
@@ -299,6 +299,13 @@ MAIN_FILE =\
        v/main.o 
 
 TEST_FILE =\
+       test/test_main.o 
+
+T_OFILES =\
+       test/test_util.o \
+       test/test_egzh.o \
+       test/test_clog.o \
+       test/test_kafk.o \
        test/test.o 
 
 VERE_OFILES=\
@@ -313,9 +320,10 @@ TEST_OFILES=\
        $(CRE2_OFILES) \
        $(OUT_OFILES) \
        $(V_OFILES) \
+       $(T_OFILES) \
        $(TEST_FILE)
 
-LIBUV=outside/libuv/libuv.a
+LIBUV=outside/libuv_11/.libs/libuv.a
 
 LIBKAFKACLIENT=outside/librdkafka/src/librdkafka.a
 
@@ -327,12 +335,14 @@ LIBANACHRONISM=outside/anachronism/build/libanachronism.a
 
 BPT_O=outside/bpt/bitmapped_patricia_tree.o
 
-all: $(BIN)/vere
+vere: $(BIN)/vere
 
 test: $(BIN)/test
 
+all: vere test
+
 $(LIBUV):
-	$(MAKE) -C outside/libuv libuv.a
+	$(MAKE) -C outside/libuv_11 all-am
 
 $(LIBKAFKACLIENT):
 	$(MAKE) -C outside/librdkafka 

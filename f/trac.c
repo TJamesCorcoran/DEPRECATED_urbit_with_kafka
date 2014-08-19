@@ -52,66 +52,66 @@
       }
     }
 
-    static u2_loom_knot*
-    _tx_sample_in(u2_noun don)
-    {
-      if ( u2_nul == don ) {
-        _tx_top_k->fin_w += 1;
-        return _tx_top_k;
-      }
-      else {
-        u2_noun       hed   = u2_h(don);
-        c3_c          hed_c[32];
-        u2_loom_knot* par_k = _tx_sample_in(u2_t(don));
-        u2_loom_knot* dis_k;
-
-        if ( (0 == par_k) && (u2_no == u2_stud(hed)) ) {
-          return 0;
-        }
-        u2_bytes(0, 32, (c3_y *)hed_c, hed);
-        hed_c[31] = 0;
-
-        for ( dis_k = par_k->fam_k; dis_k; dis_k = dis_k->nex_k ) {
-          //  linear search, should be fine in normal cases
-          //
-          if ( !strcmp(hed_c, dis_k->lic_c) ) {
-            dis_k->fin_w += 1;
-            return dis_k;
-          }
-        }
-        if ( 0 == (dis_k = _tx_knot_new()) ) {
-          return 0;
-        } else {
-          strncpy(dis_k->lic_c, hed_c, 31);
-          dis_k->fin_w = 1;
-          dis_k->fam_k = 0;
-          dis_k->nex_k = par_k->fam_k;
-          par_k->fam_k = dis_k;
-
-          return dis_k;
-        }
-      }
-    }
-    static void
-    _tx_sample(c3_i x)
-    {
-      u2_ray rac_r = _tx_rac_r;
-
-      c3_assert(_tx_on == 1);
-      // printf("sample sys %d\n", u2_trac_at(rac_r, wer.sys));
-
-      if ( u2_yes == u2_trac_at(rac_r, wer.sys) ) {
-        if ( u2_yes == u2_trac_at(rac_r, wer.glu) ) {
-          u2_trac_be(rac_r, c3_d, wer.com_d) += 1;
-        } else {
-          u2_trac_be(rac_r, c3_d, wer.jet_d) += 1;
-        }
-      } else {
-        u2_trac_be(rac_r, c3_d, wer.erp_d) += 1;
-      }
-
-      _tx_sample_in(u2_trac_at(rac_r, duz.don));
-    }
+//    static u2_loom_knot*
+//    _tx_sample_in(u2_noun don)
+//    {
+//      if ( u2_nul == don ) {
+//        _tx_top_k->fin_w += 1;
+//        return _tx_top_k;
+//      }
+//      else {
+//        u2_noun       hed   = u2_h(don);
+//        c3_c          hed_c[32];
+//        u2_loom_knot* par_k = _tx_sample_in(u2_t(don));
+//        u2_loom_knot* dis_k;
+//
+//        if ( (0 == par_k) && (u2_no == u2_stud(hed)) ) {
+//          return 0;
+//        }
+//        u2_bytes(0, 32, (c3_y *)hed_c, hed);
+//        hed_c[31] = 0;
+//
+//        for ( dis_k = par_k->fam_k; dis_k; dis_k = dis_k->nex_k ) {
+//          //  linear search, should be fine in normal cases
+//          //
+//          if ( !strcmp(hed_c, dis_k->lic_c) ) {
+//            dis_k->fin_w += 1;
+//            return dis_k;
+//          }
+//        }
+//        if ( 0 == (dis_k = _tx_knot_new()) ) {
+//          return 0;
+//        } else {
+//          strncpy(dis_k->lic_c, hed_c, 31);
+//          dis_k->fin_w = 1;
+//          dis_k->fam_k = 0;
+//          dis_k->nex_k = par_k->fam_k;
+//          par_k->fam_k = dis_k;
+//
+//          return dis_k;
+//        }
+//      }
+//    }
+//    static void
+//    _tx_sample(c3_i x)
+//    {
+//      u2_ray rac_r = _tx_rac_r;
+//
+//      c3_assert(_tx_on == 1);
+//      // printf("sample sys %d\n", u2_trac_at(rac_r, wer.sys));
+//
+//      if ( u2_yes == u2_trac_at(rac_r, wer.sys) ) {
+//        if ( u2_yes == u2_trac_at(rac_r, wer.glu) ) {
+//          u2_trac_be(rac_r, c3_d, wer.com_d) += 1;
+//        } else {
+//          u2_trac_be(rac_r, c3_d, wer.jet_d) += 1;
+//        }
+//      } else {
+//        u2_trac_be(rac_r, c3_d, wer.erp_d) += 1;
+//      }
+//
+//      _tx_sample_in(u2_trac_at(rac_r, duz.don));
+//    }
 
 /* u2_tx_samp_on(): turn profile sampling on, clear count.
 */

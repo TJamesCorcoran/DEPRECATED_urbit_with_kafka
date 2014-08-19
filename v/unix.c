@@ -211,7 +211,22 @@ _unix_file_watch(u2_ufil* fil_u,
                  c3_c*    pax_c,
                  mpz_t    mod_mp)
 {
-  uv_fs_event_init(u2L, &fil_u->was_u, pax_c, _unix_fs_event_cb, 0);
+  uv_fs_event_t eventhandle_u;
+  c3_w ret_w = uv_fs_event_init(u2L, &eventhandle_u );
+  if (0 != ret_w){
+    uL(fprintf(uH, "event init: %s\n", strerror(ret_w)));
+    c3_assert(0);
+  }
+
+ ret_w = uv_fs_event_start(& eventhandle_u,
+                           _unix_fs_event_cb,
+                           dir_u->pax_c,
+                           0);
+  if (0 != ret_w){
+    uL(fprintf(uH, "event start: %s\n", strerror(ret_w)));
+    c3_assert(0);
+  }
+
 
   // uL(fprintf(uH, "file: got: %s (handle %d)\n", pax_c, fil_u->was_u.type));
   fil_u->non = u2_no;
@@ -269,7 +284,22 @@ _unix_file_form(u2_udir* dir_u,
 static void
 _unix_dir_watch(u2_udir* dir_u, u2_udir* par_u, c3_c* pax_c)
 {
-  uv_fs_event_init(u2L, &dir_u->was_u, pax_c, _unix_fs_event_cb, 0);
+  uv_fs_event_t eventhandle_u;
+  c3_w ret_w = uv_fs_event_init(u2L, &eventhandle_u );
+  if (0 != ret_w){
+    uL(fprintf(uH, "event init: %s\n", strerror(ret_w)));
+    c3_assert(0);
+  }
+
+ ret_w = uv_fs_event_start(& eventhandle_u,
+                           _unix_fs_event_cb,
+                           dir_u->pax_c,
+                           0);
+  if (0 != ret_w){
+    uL(fprintf(uH, "event start: %s\n", strerror(ret_w)));
+    c3_assert(0);
+  }
+
 
   dir_u->yes = u2_yes;
   dir_u->dry = u2_no;
@@ -863,22 +893,22 @@ _unix_ankh_sing_in(u2_noun xun, u2_noun bur)               //  retain
 
 /* _unix_ankh_sing(): full ankh compare.
 */
-static u2_bean
-_unix_ankh_sing(u2_noun xun, u2_noun bur)                 //  retain
-{
-  if ( u2_yes == u2_sing(xun, bur) ) {
-    return u2_yes;
-  } else {
-    if ( u2_no == _unix_ankh_sing_in(xun, bur) ) {
-      // fprintf(stderr, "uas: no, no (%x, %x)\r\n", u2_mug(xun), u2_mug(bur));
-      return u2_no;
-    }
-    else {
-      // fprintf(stderr, "uas: no, yes\r\n");
-      return u2_yes;
-    }
-  }
-}
+// static u2_bean
+// _unix_ankh_sing(u2_noun xun, u2_noun bur)                 //  retain
+// {
+//   if ( u2_yes == u2_sing(xun, bur) ) {
+//     return u2_yes;
+//   } else {
+//     if ( u2_no == _unix_ankh_sing_in(xun, bur) ) {
+//       // fprintf(stderr, "uas: no, no (%x, %x)\r\n", u2_mug(xun), u2_mug(bur));
+//       return u2_no;
+//     }
+//     else {
+//       // fprintf(stderr, "uas: no, yes\r\n");
+//       return u2_yes;
+//     }
+//   }
+// }
 
 /* _unix_desk_sync_into(): sync external changes to desk.
 */
@@ -1351,7 +1381,7 @@ u2_unix_ef_look(void)
 /* _unix_ef_sync(): check for files to sync.
  */
 static void
-_unix_ef_sync(uv_check_t* han_u, c3_i sas_i)
+_unix_ef_sync(uv_check_t* han_u)
 {
   u2_lo_open();
   u2_lo_shut(u2_yes);
@@ -1360,7 +1390,7 @@ _unix_ef_sync(uv_check_t* han_u, c3_i sas_i)
 /* _unix_time_cb(): timer callback.
 */
 static void
-_unix_time_cb(uv_timer_t* tim_u, c3_i sas_i)
+_unix_time_cb(uv_timer_t* tim_u)
 {
   u2_lo_open();
   {
