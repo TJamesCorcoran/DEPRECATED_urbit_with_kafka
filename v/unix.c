@@ -838,6 +838,7 @@ _unix_desk_peek(u2_noun hox,
   }
 }
 
+#if 0 
 /* _unix_ankh_sing_map(): compare ankh maps for u2_ankh_sing().
 */
 static u2_bean _unix_ankh_sing_in(u2_noun, u2_noun);
@@ -893,22 +894,24 @@ _unix_ankh_sing_in(u2_noun xun, u2_noun bur)               //  retain
 
 /* _unix_ankh_sing(): full ankh compare.
 */
-// static u2_bean
-// _unix_ankh_sing(u2_noun xun, u2_noun bur)                 //  retain
-// {
-//   if ( u2_yes == u2_sing(xun, bur) ) {
-//     return u2_yes;
-//   } else {
-//     if ( u2_no == _unix_ankh_sing_in(xun, bur) ) {
-//       // fprintf(stderr, "uas: no, no (%x, %x)\r\n", u2_mug(xun), u2_mug(bur));
-//       return u2_no;
-//     }
-//     else {
-//       // fprintf(stderr, "uas: no, yes\r\n");
-//       return u2_yes;
-//     }
-//   }
-// }
+static u2_bean
+_unix_ankh_sing(u2_noun xun, u2_noun bur)                 //  retain
+{
+  if ( u2_yes == u2_sing(xun, bur) ) {
+    return u2_yes;
+  } else {
+    if ( u2_no == _unix_ankh_sing_in(xun, bur) ) {
+      // fprintf(stderr, "uas: no, no (%x, %x)\r\n", u2_mug(xun), u2_mug(bur));
+      return u2_no;
+    }
+    else {
+      // fprintf(stderr, "uas: no, yes\r\n");
+      return u2_yes;
+    }
+  }
+}
+#endif
+
 
 /* _unix_desk_sync_into(): sync external changes to desk.
 */

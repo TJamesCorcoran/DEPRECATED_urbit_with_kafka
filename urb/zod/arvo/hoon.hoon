@@ -1774,6 +1774,13 @@
   |*  b=_+<+.a
   (a b c)
 ::
+++  cork  |*([a=_,* b=gate] (corl b a))
+::
+++  corl
+  |*  [a=gate b=_,*]
+  |=  c=_+<.b
+  (a (b c))
+::
 ++  hard
   |*  han=$+(* *)
   |=  fud=*  ^-  han
