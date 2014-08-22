@@ -141,7 +141,7 @@ void u2_egz_rm()
   sprintf(exec_c, "exec rm -rf %s/*", ful_c);
   if (system(exec_c) < 0){
     fprintf(stderr, "u2_egz_rm() failed\n");
-    exit(-1);
+    c3_assert(0);;
   }
 }
 
@@ -388,9 +388,26 @@ c3_t u2_egz_pull_one_ova(c3_d *  ent_d,
   return(c3_true);
 }
 
+// note that 
+//
 u2_noun u2_egz_pull_all(    u2_reck* rec_u,  c3_i fid_i,  u2_bean *  ohh)
 {
-  // NOTFORCHECKIN - unimplemented
+  u2_noun     roe = u2_nul;
+
+  c3_t ret_t = c3_true;
+  while (c3_true == ret_t){
+    c3_d    ent_d;
+    c3_y    msg_type_y;
+    u2_noun ova = u2_nul;
+
+    ret_t = u2_egz_pull_one_ova(&  ent_d, &  msg_type_y, & ovo);
+
+
+    roe = u2nc(ova, roe);
+  }
+
+  return(roe);
+  
 }
 
 
@@ -436,7 +453,7 @@ u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,   u2_bean *  ohh)
   }
   rec_u->ent_d = c3_max(las_d + 1ULL, old_d);
 
-  exit(-1); // NOTFORCHECKIN - unimplemented!
+  c3_assert(0);; // NOTFORCHECKIN - unimplemented!
   u2_noun uglyhack_u;
   return( uglyhack_u);
 }
@@ -505,7 +522,7 @@ int here_a = 0; // NOTFORCHECKIN
 int here_b = 0; // NOTFORCHECKIN
 int here_c = 0; // NOTFORCHECKIN
 
-void _egz_finalize_and_emit(uv_async_t* async_u, int status_w)
+void _egz_finalize_and_emit(uv_async_t* async_u)
 {
   clog_thread_baton *  clog_baton_u = (clog_thread_baton *) async_u->data;
 
@@ -514,7 +531,7 @@ void _egz_finalize_and_emit(uv_async_t* async_u, int status_w)
 
   if (clog_baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
     fprintf(stderr, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) clog_baton_u->seq_d);
-    exit(-1);
+    c3_assert(0);;
   }
 
   // emit here
@@ -600,7 +617,7 @@ _egz_push_in_thread_inner(void * raw_u)
                                &_egz_finalize_and_emit );
     if (ret_w < 0){
       fprintf(stderr, "egzh: unable to inject event into uv 1\n");
-      exit(-1);
+      c3_assert(0);;
     }
 
 
@@ -612,7 +629,7 @@ _egz_push_in_thread_inner(void * raw_u)
 
     if (uv_async_send(async_u) < 0){
       fprintf(stderr, "egzh: unable to inject event into uv 2\n");
-      exit(-1);
+      c3_assert(0);;
     }
     uv_mutex_unlock(& _async_inject_mutex_u );
 
@@ -639,7 +656,7 @@ _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_t
                        & _egz_push_in_thread_inner,
                        clog_baton_u) < 0){
     fprintf(stderr, "egzh: unable to spawn thread for push\n");
-    exit(-1);
+    c3_assert(0);;
   }
 
 }
@@ -730,16 +747,16 @@ void _egz_consolidator(void *arg)
         egzfid_i = open(egzfile_c, O_WRONLY | O_APPEND, 0600);
         if (-1 ==egzfid_i){
           fprintf(stderr, "FATAL: consolidator couldn't read egz %s\n", egzfile_c);
-          exit(-1);
+          c3_assert(0);;
         }
 
         //         if (off_ds < 0){
         //           fprintf(stderr, "FATAL: consolidator couldn't lseek egz %s\n", egzfile_c);
-        //           exit(-1);
+        //           c3_assert(0);;
         //         }
         //         if (off_ds < sizeof(u2_eghd)){
         //           fprintf(stderr, "FATAL: consolidator lseek suggests no header %s ; %lli\n", egzfile_c, (long long int) off_ds);
-        //           exit(-1);
+        //           c3_assert(0);;
         //         }
         //         printf("consolidator egz.hope size = %lli\n", (long long int) off_ds); // NOTFORCHECKIN
       }
@@ -750,7 +767,7 @@ void _egz_consolidator(void *arg)
       c3_i minifid_i = open(minifile_c, O_RDONLY, 0400);
       if (-1 == minifid_i){
         fprintf(stderr, "FATAL: consolidator couldn't open minifile %s\n", minifile_c);
-        exit(-1);
+        c3_assert(0);;
       }
       
       // 2) read minifile
@@ -760,19 +777,19 @@ void _egz_consolidator(void *arg)
       c3_w eventheadersize_w = read(minifid_i, &eventheader_u, sizeof(eventheader_u));
       if (eventheadersize_w < sizeof(u2_clpr)){
         fprintf(stderr, "FATAL: consolidator couldn't read minifile eventheader %s\n", minifile_c);
-        exit(-1);
+        c3_assert(0);;
       }
       c3_w totalsize_w = eventheader_u.len_w + sizeof(u2_clpr);
 
       // 2.2) seek back a few bytes then read for real
       if  (lseek64(minifid_i, -1 * sizeof(u2_clpr) , SEEK_CUR) < 0){
         fprintf(stderr, "FATAL: consolidator couldn't backup\n");
-        exit(-1);
+        c3_assert(0);;
       }
       c3_y*   fullentry_y = (c3_y*) c3_malloc(totalsize_w);
       if (read(minifid_i, fullentry_y, totalsize_w) < totalsize_w) {
         fprintf(stderr, "FATAL: consolidator read insufficient bytes from minifile %s\n", minifile_c);
-        exit(-1);
+        c3_assert(0);;
       }
 
       // 3.0) append data to egz
@@ -780,7 +797,7 @@ void _egz_consolidator(void *arg)
       c3_w ret_w = write(egzfid_i, fullentry_y, totalsize_w); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't append to egz %s\n", egzfile_c);
-        exit(-1);
+        c3_assert(0);;
       }
 
       new_bytes_d += totalsize_w;
@@ -789,14 +806,14 @@ void _egz_consolidator(void *arg)
       ret_w = close(minifid_i); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't close minifile %s -- %s\n", strerror(errno), minifile_c);
-        exit(-1);
+        c3_assert(0);;
       }
 
       // 5) delete minifile
       ret_w =  unlink(minifile_c);
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't delete minifile %s -- %s\n", strerror(errno), minifile_c);
-        exit(-1);
+        c3_assert(0);;
       }
 
     } // while _dequeue
@@ -804,13 +821,13 @@ void _egz_consolidator(void *arg)
     // 5) close egz file just once per waking cycle
     if (0 != syncfs(egzfid_i)){
       fprintf(stderr, "FATAL: consolidator couldn't syncfs egzfile: %s\n", strerror(errno));
-      exit(-1);
+      c3_assert(0);;
     }
     if (0 != egzfid_i){
       c3_w ret_w = close(egzfid_i); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't close egzfile\n");
-        exit(-1);
+        c3_assert(0);;
       }
     }
 
@@ -845,7 +862,7 @@ void u2_egz_init()
                              NULL);
   if (ret < 0){
     fprintf(stderr, "egzh: consolidator not started\n");
-    exit(-1);
+    c3_assert(0);;
   }
 
 }

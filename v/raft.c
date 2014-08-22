@@ -85,7 +85,7 @@ _raft_readname(const c3_c* str_c, c3_w siz_w)
   c3_w     nam_w;
 
   nam_u->str_c = c3_malloc(siz_w + 1);
-  strncpy(nam_u->str_c, str_c, siz_w);
+  strncpy(nam_u->str_c, str_c, siz_w + 1);
   nam_u->str_c[siz_w] = '\0';
 
   if ( 0 == (col_c = strchr(nam_u->str_c, ':')) ) {
@@ -96,7 +96,8 @@ _raft_readname(const c3_c* str_c, c3_w siz_w)
   else {
     nam_w = col_c - nam_u->str_c + 1;
     nam_u->nam_c = c3_malloc(nam_w);
-    strncpy(nam_u->nam_c, nam_u->str_c, nam_w); // changed from strlcpy
+    strncpy(nam_u->nam_c, nam_u->str_c, nam_w + 1);
+    *(nam_u->nam_c + nam_w) = 0;
     nam_u->por_c = strdup(col_c + 1);
   }
   return nam_u;
@@ -506,7 +507,7 @@ _raft_rmsg_read(const u2_rbuf* buf_u, u2_rmsg* msg_u)
         return -1;
       }
       msg_u->rest.nam_c = c3_malloc(4 * msg_u->rest.nam_w);
-      strncpy(msg_u->rest.nam_c, (const char*)(buf_u->buf_y + red_i), 4 * msg_u->rest.nam_w); // changed from uv_strlcpy
+      strncpy(msg_u->rest.nam_c, (const char*)(buf_u->buf_y + red_i), 4 * msg_u->rest.nam_w + 1);
       red_i += 4 * msg_u->rest.nam_w;
       break;
     }
@@ -684,7 +685,7 @@ _raft_write_cb(uv_write_t* wri_u, c3_i sas_i)
   struct _u2_write_t* req_u = (struct _u2_write_t*)wri_u;
 
   if ( 0 != sas_i ) {
-    uL(fprintf(uH, "raft: write_cb: ERROR\n"));
+    uL(fprintf(uH, "raft: write_cb: error\n"));
     _raft_conn_dead((u2_rcon*)wri_u->handle);
   }
   free(req_u->buf_y);
@@ -767,9 +768,9 @@ _raft_conn_work(u2_rcon* ron_u)
 
     c3_w ret_w;
     if ( 0 != (ret_w = uv_write((uv_write_t*)req_u,
-                       (uv_stream_t*)&ron_u->wax_u,
-                       &buf_u,
-                       1,
+                                (uv_stream_t*)&ron_u->wax_u,
+                                &buf_u,
+                                1,
                                 _raft_write_cb)) )
     {
       uL(fprintf(uH, "raft: conn_work (write): %s\n",
@@ -971,7 +972,7 @@ _raft_listen_cb(uv_stream_t* str_u, c3_i sas_i)
   u2_raft* raf_u = (u2_raft*)str_u;
 
   if ( 0 != sas_i ) {
-    uL(fprintf(uH, "raft: listen_cb: ERROR\n"));
+    uL(fprintf(uH, "raft: listen_cb: error\n"));
   }
   else {
     u2_rcon* ron_u = _raft_conn_new(raf_u);
@@ -979,7 +980,7 @@ _raft_listen_cb(uv_stream_t* str_u, c3_i sas_i)
     if ( 0 != uv_accept((uv_stream_t*)&raf_u->wax_u,
                         (uv_stream_t*)&ron_u->wax_u) )
     {
-      uL(fprintf(uH, "raft: accept: ERROR\n"));
+      uL(fprintf(uH, "raft: accept: error\n"));
 
       uv_close((uv_handle_t*)&ron_u->wax_u, 0);
       free(ron_u);
@@ -1098,7 +1099,7 @@ _raft_conn_all(u2_raft* raf_u, void (*con_f)(u2_rcon* ron_u))
                                _raft_getaddrinfo_cb,
                                nam_u->nam_c,
                                nam_u->por_c,
-                                      &hit_u)) )
+                                      &hit_u) ))
       {
         uL(fprintf(uH, "raft: getaddrinfo: %s\n",
                        uv_strerror(ret)));
@@ -1156,7 +1157,7 @@ _raft_write_rest(u2_rcon* ron_u, c3_d lai_d, c3_w lat_w, u2_rmsg* msg_u)
   msg_u->rest.lat_w = lat_w;
   msg_u->rest.nam_w = 1 + strlen(raf_u->str_c) / 4;
   msg_u->rest.nam_c = calloc(1, 4 * msg_u->rest.nam_w);
-  strncpy(msg_u->rest.nam_c, raf_u->str_c, 4 * msg_u->rest.nam_w); // changed from strlcpy
+  strncpy(msg_u->rest.nam_c, raf_u->str_c, 4 * msg_u->rest.nam_w + 1);
   msg_u->len_d += 4 + msg_u->rest.nam_w;
 }
 
@@ -1633,6 +1634,38 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
 }
 
 
+static void
+_raft_comm(u2_reck* rec_u, c3_d bid_d)
+{
+  u2_cart* egg_u;
+
+  u2_lo_open();
+
+  egg_u = rec_u->ova.egg_u;
+  while ( egg_u ) {
+    if ( egg_u->ent_d <= bid_d ) {
+      egg_u->cit = u2_yes;
+    } else break;
+    egg_u = egg_u->nex_u;
+  }
+  u2_lo_shut(u2_yes);
+}
+
+static void
+_raft_comm_cb(uv_timer_t* tim_u)
+{
+  u2_raft* raf_u = tim_u->data;
+
+  _raft_comm(u2A, raf_u->ent_d);
+}
+
+
+static c3_d
+_raft_push(u2_raft* raf_u, c3_w* bob_w, c3_w len_w)
+{
+  c3_assert(raf_u->typ_e == u2_raty_lead);
+  c3_assert(0 != bob_w && 0 < len_w);
+
 // static void
 // _raft_comm(u2_reck* rec_u, c3_d bid_d)
 // {
@@ -1660,6 +1693,7 @@ _raft_punk(u2_reck* rec_u, u2_noun ovo)
 //   _raft_comm(u2A, raf_u->ent_d);
 // }
 // 
+
 
 
 

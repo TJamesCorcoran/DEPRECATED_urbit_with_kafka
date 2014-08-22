@@ -59,12 +59,13 @@ INCLUDE=include
 MDEFINES=-DU2_OS_$(OS) -DU2_OS_ENDIAN_$(ENDIAN) -D U2_LIB=\"$(LIB)\"
 
 # NOTFORCHECKIN - restore -O2
+
 CFLAGS= -O0 -g -msse3 -ffast-math \
 	-funsigned-char \
 	-I/usr/local/include \
 	-I/opt/local/include \
 	-I$(INCLUDE) \
-	-Ioutside/libuv_11/include \
+	-Ioutside/libuv_0.11/include \
 	-Ioutside/anachronism/include \
 	-Ioutside/bpt \
 	-Ioutside/re2 \
@@ -298,6 +299,7 @@ V_OFILES=\
 MAIN_FILE =\
        v/main.o 
 
+
 TEST_FILE =\
        test/test_main.o 
 
@@ -315,6 +317,7 @@ VERE_OFILES=\
        $(V_OFILES) \
        $(MAIN_FILE)
 
+
 TEST_OFILES=\
        $(BASE_OFILES) \
        $(CRE2_OFILES) \
@@ -323,7 +326,7 @@ TEST_OFILES=\
        $(T_OFILES) \
        $(TEST_FILE)
 
-LIBUV=outside/libuv_11/.libs/libuv.a
+LIBUV=outside/libuv_0.11/.libs/libuv.a
 
 LIBKAFKACLIENT=outside/librdkafka/src/librdkafka.a
 
@@ -342,7 +345,7 @@ test: $(BIN)/test
 all: vere test
 
 $(LIBUV):
-	$(MAKE) -C outside/libuv_11 all-am
+	$(MAKE) -C outside/libuv_0.11 all-am
 
 $(LIBKAFKACLIENT):
 	$(MAKE) -C outside/librdkafka 
@@ -364,6 +367,7 @@ $(CRE2_OFILES): outside/cre2/src/src/cre2.cpp outside/cre2/src/src/cre2.h $(LIBR
 	$(CXX) $(CXXFLAGS) -c $< $(LIBRE2) -o $@
 
 $(V_OFILES) f/loom.o f/trac.o: include/v/vere.h
+
 
 $(BIN)/vere: $(LIBCRE) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(BPT_O) $(LIBANACHRONISM) $(LIBKAFKACLIENT)
 	mkdir -p $(BIN)
@@ -402,8 +406,8 @@ clean:
 	$(RM) $(VERE_OFILES) $(BIN)/vere vere.pkg
 
 distclean: clean
-	$(MAKE) -C outside/libuv clean
 	$(MAKE) -C outside/librdkafka clean
+	$(MAKE) -C outside/libuv_0.11 clean
 	$(MAKE) -C outside/re2 clean
 	$(MAKE) -C outside/ed25519 clean
 	$(MAKE) -C outside/anachronism clean

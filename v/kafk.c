@@ -108,7 +108,7 @@ void u2_kafk_init()
   //    2) customize configuration
   rd_kafka_conf_res_t prod_topic_u = rd_kafka_topic_conf_set(topic_prod_conf_u, "produce.offset.report", "true", errstr, sizeof(errstr));
   if (prod_topic_u != RD_KAFKA_CONF_OK){
-    exit(-1);
+    c3_assert(0);;
   }
 
   //    3) actually create topic handles
@@ -124,13 +124,13 @@ void u2_kafk_init()
 //  write functions
 //--------------------
 
-void _kafka_finalize_and_emit(uv_async_t* async_u, int status_w)
+void _kafka_finalize_and_emit(uv_async_t* async_u)
 {
   clog_thread_baton * baton_u = (clog_thread_baton *)  async_u->data;
 
   if (baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
     fprintf(stderr, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) baton_u->seq_d);
-    exit(-1);
+    c3_assert(0);;
   }
 
   // emit here
@@ -173,7 +173,7 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk,
   //
   if (rkmessage->err){
     fprintf(stderr, "kafk: CB delivery failure: %s\n", rd_kafka_message_errstr(rkmessage));
-    exit(-1);
+    c3_assert(0);;
   }
 
   clog_thread_baton * baton_u = (clog_thread_baton * ) opaque;
@@ -210,7 +210,7 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk,
                              &_kafka_finalize_and_emit );
   if (ret_w < 0){
     fprintf(stderr, "kafk: unable to inject event into uv\n");
-    exit(-1);
+    c3_assert(0);;
   }
   async_u->data = (void *) baton_u;
 
@@ -233,7 +233,7 @@ void u2_kafk_push(c3_y * msg_y, c3_w len_w, clog_thread_baton * baton_u)
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
+    c3_assert(0);;
   }
 
   // send the message
@@ -310,14 +310,14 @@ void u2_kafk_pre_read(c3_d offset_d)
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
+    c3_assert(0);;
   }
 
   if (rd_kafka_consume_start(u2K->topic_cons_handle_u, 
                              READ_PARTITION,
                              offset_d ) == -1){
     fprintf(stderr, "%% Failed to start consuming: %s\n", rd_kafka_err2str(rd_kafka_errno2err(errno)));
-    exit(-1);
+    c3_assert(0);;
   }
 }
 
@@ -336,7 +336,7 @@ c3_t u2_kafk_pull_one(c3_d * ent_d,            // return arg
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
+    c3_assert(0);;
   }
 
   rd_kafka_message_t *rkmessage;
@@ -404,7 +404,7 @@ c3_t u2_kafk_pull_one_ova(c3_d    * ent_d,
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
-    exit(-1);
+    c3_assert(0);;
   }
 
   // 4) pull from log

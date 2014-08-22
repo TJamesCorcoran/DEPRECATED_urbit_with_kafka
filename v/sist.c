@@ -481,53 +481,53 @@ _sist_home(u2_reck* rec_u)
 
   /* _sist_cask(): ask for a passcode.
    */
-  static u2_noun
-    _sist_cask(u2_reck* rec_u, c3_c* dir_c, u2_bean nun)
-  {
-    c3_c   paw_c[60];
-    u2_noun key;
-
-    uH;
-    while ( 1 ) {
-      printf("passcode for %s%s? ~", dir_c, (u2_yes == nun) ? " [none]" : "");
-
-      paw_c[0] = 0;
-      c3_fpurge(stdin);
-      fgets(paw_c, 59, stdin);
-
-      if ( '\n' == paw_c[0] ) {
-        if ( u2_yes == nun ) {
-          key = 0; break;
-        }
-        else {
-          continue;
-        }
-      }
-      else {
-        c3_c* say_c = c3_malloc(strlen(paw_c) + 2);
-        u2_noun say;
-
-        say_c[0] = '~';
-        say_c[1] = 0;
-        strncat(say_c, paw_c, strlen(paw_c) - 1);
-
-        say = u2_do("slay", u2_ci_string(say_c));
-        if ( (u2_nul == say) ||
-             (u2_blip != u2h(u2t(say))) ||
-             ('p' != u2h(u2t(u2t(say)))) )
-          {
-            printf("invalid passcode\n");
-            continue;
-          }
-        key = u2k(u2t(u2t(u2t(say))));
-
-        u2z(say);
-        break;
-      }
-    }
-    uL(0);
-    return key;
-  }
+//  static u2_noun
+//    _sist_cask(u2_reck* rec_u, c3_c* dir_c, u2_bean nun)
+//  {
+//    c3_c   paw_c[60];
+//    u2_noun key;
+//
+//    uH;
+//    while ( 1 ) {
+//      printf("passcode for %s%s? ~", dir_c, (u2_yes == nun) ? " [none]" : "");
+//
+//      paw_c[0] = 0;
+//      c3_fpurge(stdin);
+//      fgets(paw_c, 59, stdin);
+//
+//      if ( '\n' == paw_c[0] ) {
+//        if ( u2_yes == nun ) {
+//          key = 0; break;
+//        }
+//        else {
+//          continue;
+//        }
+//      }
+//      else {
+//        c3_c* say_c = c3_malloc(strlen(paw_c) + 2);
+//        u2_noun say;
+//
+//        say_c[0] = '~';
+//        say_c[1] = 0;
+//        strncat(say_c, paw_c, strlen(paw_c) - 1);
+//
+//        say = u2_do("slay", u2_ci_string(say_c));
+//        if ( (u2_nul == say) ||
+//             (u2_blip != u2h(u2t(say))) ||
+//             ('p' != u2h(u2t(u2t(say)))) )
+//          {
+//            printf("invalid passcode\n");
+//            continue;
+//          }
+//        key = u2k(u2t(u2t(u2t(say))));
+//
+//        u2z(say);
+//        break;
+//      }
+//    }
+//    uL(0);
+//    return key;
+//  }
 
   /* _sist_text(): ask for a name string.
    */
@@ -641,46 +641,46 @@ _sist_home(u2_reck* rec_u)
 
   /* _sist_staf(): try to load passcode by mug from home directory.
    */
-  static u2_noun
-    _sist_staf(u2_reck* rec_u, c3_l key_l)
-  {
-    c3_c    ful_c[2048];
-    u2_noun gum   = u2_dc("scot", 'p', key_l);
-    c3_c*   gum_c = u2_cr_string(gum);
-    u2_noun txt;
-
-    c3_c bas_c[2048];
-    u2_sist_get_pier_dirstr(bas_c, 2048);
-    snprintf(ful_c, 2048, "%s/.urb/code.%s", bas_c, gum_c);
-    free(gum_c);
-    u2z(gum);
-    txt = u2_walk_safe(ful_c);
-
-    if ( 0 == txt ) {
-      uL(fprintf(uH, "staf: no passcode %s\n", ful_c));
-      return 0;
-    }
-    else {
-      // c3_c* txt_c = u2_cr_string(txt);
-      u2_noun say = u2_do("slay", txt);
-      u2_noun pas;
-
-
-      if ( (u2_nul == say) ||
-           (u2_blip != u2h(u2t(say))) ||
-           ('p' != u2h(u2t(u2t(say)))) )
-        {
-          uL(fprintf(uH, "staf: %s is corrupt\n", ful_c));
-          u2z(say);
-          return 0;
-        }
-      uL(fprintf(uH, "loaded passcode from %s\n", ful_c));
-      pas = u2k(u2t(u2t(u2t(say))));
-
-      u2z(say);
-      return pas;
-    }
-  }
+//  static u2_noun
+//    _sist_staf(u2_reck* rec_u, c3_l key_l)
+//  {
+//    c3_c    ful_c[2048];
+//    u2_noun gum   = u2_dc("scot", 'p', key_l);
+//    c3_c*   gum_c = u2_cr_string(gum);
+//    u2_noun txt;
+//
+//    c3_c bas_c[2048];
+//    u2_sist_get_pier_dirstr(bas_c, 2048);
+//    snprintf(ful_c, 2048, "%s/.urb/code.%s", bas_c, gum_c);
+//    free(gum_c);
+//    u2z(gum);
+//    txt = u2_walk_safe(ful_c);
+//
+//    if ( 0 == txt ) {
+//      uL(fprintf(uH, "staf: no passcode %s\n", ful_c));
+//      return 0;
+//    }
+//    else {
+//      // c3_c* txt_c = u2_cr_string(txt);
+//      u2_noun say = u2_do("slay", txt);
+//      u2_noun pas;
+//
+//
+//      if ( (u2_nul == say) ||
+//           (u2_blip != u2h(u2t(say))) ||
+//           ('p' != u2h(u2t(u2t(say)))) )
+//        {
+//          uL(fprintf(uH, "staf: %s is corrupt\n", ful_c));
+//          u2z(say);
+//          return 0;
+//        }
+//      uL(fprintf(uH, "loaded passcode from %s\n", ful_c));
+//      pas = u2k(u2t(u2t(u2t(say))));
+//
+//      u2z(say);
+//      return pas;
+//    }
+//  }
 
 
 
@@ -805,7 +805,10 @@ _sist_rest(u2_reck* rec_u)
   } else {
     //  Open the file, check the header, store details in fid_i, led_u
     c3_t success = u2_egz_open(rec_u, & fid_i, & led_u);
-    if (success != c3_true) { exit(-1); }
+    if (success != c3_true) { 
+      fprintf(stderr, "sist_rest: failure to load egzh\n");
+      exit(-1); 
+    }
   }
 
   // (3) Read in first event from log.  See if there's anything newer
@@ -838,8 +841,6 @@ _sist_rest(u2_reck* rec_u)
 
   // (4) the log contains info that is new to us. Read it! Use it!
   //
-
-  exit(-1); // the next few lines are UNIMPLEMENTED  // NOTFORCHECKIN
   // we need to:
   //   * read through all events
   //   * replay the committed ones

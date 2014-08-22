@@ -26,6 +26,7 @@
 #include "all.h"
 #include "v/vere.h"
 #include "v/kafk.h"
+#include "v/egzh.h"
 
 
 /**  Legacy fixed jet linkage.  Destroy me please.

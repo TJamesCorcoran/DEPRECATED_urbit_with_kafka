@@ -34,7 +34,7 @@ _save_sign_cb(uv_signal_t* sil_u, c3_i num_i)
 /* _save_time_cb(): timer callback.
 */
 static void
-_save_time_cb(uv_timer_t* tim_u, c3_i sas_i)
+_save_time_cb(uv_timer_t* tim_u)
 {
   u2_save* sav_u = &u2_Host.sav_u;
 

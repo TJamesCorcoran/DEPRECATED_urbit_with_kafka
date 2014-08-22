@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -18,6 +17,10 @@
 #include <pmmintrin.h>
 #include <xmmintrin.h>
 
+#include "all.h"
+#include "v/vere.h"
+#include "v/kafk.h"
+#include "v/egzh.h"
 
 uv_loop_t* lup_u;
 
@@ -35,8 +38,15 @@ void test_kafka_logging_ova_w();
 void test_kafka_logging_ova_r(uv_timer_t* handle, int status);
 void test_kafka_logging_ova_setup();
 
+
 // clog
 void test_clog_unclog_setup();
+
+// egzh
+void test_egz_queue_setup();
+void test_egz_bytes_setup();
+void test_egz_ova_setup();
+void  test_egz_stress();
 
 // util
 void util_end_test();

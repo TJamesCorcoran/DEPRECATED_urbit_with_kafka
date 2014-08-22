@@ -2,6 +2,7 @@
 //
 // This file is in the public domain.
 //
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -27,12 +28,11 @@
 #include "v/vere.h"
 #include "v/kafk.h"
 
-#include "test_main.h"
 
-#define U2_GLOBAL
-#define C3_GLOBAL
+void _lo_init();
+void run_tests();
 
-
+uv_loop_t* lup_u;
 
 /**  Legacy fixed jet linkage.  Destroy me please.
 **/
@@ -487,3 +487,4 @@ void setup_loop()
   // u2_raft_init();
 
 }
+
