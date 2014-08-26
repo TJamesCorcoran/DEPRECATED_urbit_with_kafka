@@ -231,8 +231,8 @@ void test_egz_ova_setup()
 
 #define NUM_MESSAGES 1000
 
-c3_d total_count_d = 0; 
-c3_d total_bytes_d = 0;
+static c3_d total_count_d = 0; 
+static c3_d total_bytes_d = 0;
 struct timeval  before_tv;
 struct timeval  after_cons_tv;
 

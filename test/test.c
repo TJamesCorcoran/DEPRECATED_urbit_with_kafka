@@ -10,10 +10,12 @@ void run_tests()
   // WORKS test_egz_bytes_setup();
   // WORKS test_egz_ova_setup();
 
-  test_egz_stress();
+  // test_egz_stress();
 
   // WORKS test_kafka_logging_bytes();
   // test_kafka_logging_ova_setup();
+
+  test_kafk_stress();
 
   exit(1);
 }

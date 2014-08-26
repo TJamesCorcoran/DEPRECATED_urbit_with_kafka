@@ -801,7 +801,7 @@ _sist_rest(u2_reck* rec_u)
 
   if (kafk_b) {
     // get ready to read: note use of kaf_d
-    u2_kafk_pre_read(kaf_d);
+    u2_kafk_pull_start(kaf_d);
   } else {
     //  Open the file, check the header, store details in fid_i, led_u
     c3_t success = u2_egz_open(rec_u, & fid_i, & led_u);

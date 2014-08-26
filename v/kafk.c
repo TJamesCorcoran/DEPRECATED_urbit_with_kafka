@@ -306,7 +306,7 @@ u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
 // 
 //    Call this once, specifying the offset - the KAFKA offset, not the ovum message number!
 //
-void u2_kafk_pre_read(c3_d offset_d)
+void u2_kafk_pull_start(c3_d offset_d)
 {
   if (u2K->inited_t != c3_true){ 
     fprintf(stderr, "kafk: must init first\n"); 
@@ -426,6 +426,8 @@ c3_t u2_kafk_pull_one_ova(c3_d    * ent_d,
 
 u2_noun  u2_kafk_pull_all(u2_reck* rec_u,  u2_bean *  ohh)
 {
+  u2_noun     roe = u2_nul;
+  return(roe);
   // NOTFORCHECKIN - unimplemented
 }
 
@@ -446,7 +448,7 @@ void u2_kafk_decommit()
 //--------------------
 
 
-void u2_kafka_down()
+void u2_kafk_shutdown()
 {
   if (! u2_Host.ops_u.kaf_c) { return ; }
 
