@@ -1,4 +1,5 @@
 #include "test_main.h"
+#include "test_util.h"
 
 void _test_clog_unclog()
 {
@@ -40,8 +41,8 @@ void _test_clog_unclog()
 
 void test_clog_unclog_setup()
 {
-  setup_loop();
+  //  setup_loop();
   util_run_inside_loop( & _test_clog_unclog, NULL );
-  util_run_after_timer( & util_end_test, NULL, 2 * 1000, 0);
-  util_run_loop();
+  util_run_after_timer( & util_loop_run, NULL, 2 * 1000, 0);
+  util_loop_run();
 }

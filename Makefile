@@ -326,6 +326,8 @@ TEST_OFILES=\
        $(T_OFILES) \
        $(TEST_FILE)
 
+LIBUV_MAKEFILE=outside/libuv_0.11/Makefile
+
 LIBUV=outside/libuv_0.11/.libs/libuv.a
 
 LIBKAFKACLIENT=outside/librdkafka/src/librdkafka.a
@@ -344,7 +346,10 @@ test: $(BIN)/test
 
 all: vere test
 
-$(LIBUV):
+$(LIBUV_MAKEFILE):
+	cd outside/libuv_0.11 ; sh autogen.sh ; ./configure ; make
+
+$(LIBUV): $(LIBUV_MAKEFILE)
 	$(MAKE) -C outside/libuv_0.11 all-am
 
 $(LIBKAFKACLIENT):
@@ -405,9 +410,9 @@ debinstall:
 clean:
 	$(RM) $(VERE_OFILES) $(BIN)/vere vere.pkg
 
-distclean: clean
+distclean: clean $(LIBUV_MAKEFILE)
 	$(MAKE) -C outside/librdkafka clean
-	$(MAKE) -C outside/libuv_0.11 clean
+	$(MAKE) -C outside/libuv_0.11 distclean
 	$(MAKE) -C outside/re2 clean
 	$(MAKE) -C outside/ed25519 clean
 	$(MAKE) -C outside/anachronism clean

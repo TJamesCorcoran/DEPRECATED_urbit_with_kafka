@@ -1,4 +1,7 @@
 #include "test_main.h"
+#include "test_util.h"
+
+#define READ_INTERVAL_SECONDS (5 * 1000)
 
 void test_kafka_logging_bytes()
 {
@@ -128,10 +131,10 @@ void test_kafka_logging_ova_setup()
   u2_Host.arv_u->key = 1;
   u2_kafk_init();
 
-  setup_loop();
+  //  setup_loop();
   util_run_inside_loop( & test_kafka_logging_ova_w , NULL );
   util_run_after_timer( & test_kafka_logging_ova_r , NULL, READ_INTERVAL_SECONDS, READ_INTERVAL_SECONDS );
-  util_run_after_timer( & util_read_gate           , NULL, 20 * 1000, 1 );
-  util_run_after_timer( & util_end_test            , NULL, 30 * 1000, 0);
-  util_run_loop();
+  util_run_after_timer( & util_gate_read           , NULL, 20 * 1000, 1 );
+  util_run_after_timer( & util_loop_stop            , NULL, 30 * 1000, 0);
+  util_loop_run();
 }

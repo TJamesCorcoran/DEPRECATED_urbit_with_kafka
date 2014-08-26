@@ -32,8 +32,6 @@
 void _lo_init();
 void run_tests();
 
-uv_loop_t* lup_u;
-
 /**  Legacy fixed jet linkage.  Destroy me please.
 **/
     /* External drivers.
@@ -449,19 +447,14 @@ main(c3_i   argc, c3_c** argv)
 
   u2_lo_grab("main", u2_none);
 
-  lup_u = uv_default_loop();
+  // bits of u2_lo_loop here!
 
-  u2_Host.lup_u = lup_u;
-
+  u2_Host.lup_u = uv_default_loop();
   signal(SIGPIPE, SIG_IGN);     //  pipe, schmipe
+  _lo_init();                   // set up libuv watchers
+  // u2_raft_init();            // set up arvo processing (timeout clock, etc.) SKIP FOR TEST
 
-  // set up libuv watchers
-  _lo_init();
-
-  // set up arvo processing (timeout clock, etc.)
-  // SKIPPING FOR TESTING
-  //
-  // u2_raft_init();
+  u2_Host.arv_u->key = 1;       // ???- why do I do this? I forget.
 
   run_tests();
 
@@ -469,22 +462,4 @@ main(c3_i   argc, c3_c** argv)
 }
 
 
-
-void setup_loop()
-{
-  lup_u = uv_default_loop();
-
-  u2_Host.lup_u = lup_u;
-
-  signal(SIGPIPE, SIG_IGN);     //  pipe, schmipe
-
-  // set up libuv watchers
-  _lo_init();
-
-  // set up arvo processing (timeout clock, etc.)
-  // SKIPPING FOR TESTING
-  //
-  // u2_raft_init();
-
-}
 

@@ -195,7 +195,7 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk,
 
   // 3) bail if done 
   if (LOG_MSG_POSTCOMMIT == baton_u -> msg_type_y){
-    printf("kafk: 2nd logging complete for event %lli\n", (long long int) baton_u->seq_d); // NOTFORCHECKIN
+    printf("kafk: 2nd logging complete for event %lli\n", (long long int) baton_u->seq_d);
     free(baton_u->bob_y);
     free(baton_u);
     return;
@@ -210,7 +210,7 @@ static void _kafka_msg_delivered_cb (rd_kafka_t *rk,
                              &_kafka_finalize_and_emit );
   if (ret_w < 0){
     fprintf(stderr, "kafk: unable to inject event into uv\n");
-    c3_assert(0);;
+    c3_assert(0);
   }
   async_u->data = (void *) baton_u;
 

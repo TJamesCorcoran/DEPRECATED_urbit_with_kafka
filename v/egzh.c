@@ -136,12 +136,12 @@ void u2_egz_rm()
   unlink(ful_c);
 
   // delete all quickfiles
-  u2_sist_get_egz_quick_dirstr(ful_c, 2048);
+  const c3_c * dirstr_c = u2_sist_get_egz_quick_dirstr();
   c3_c    exec_c[2048];
-  sprintf(exec_c, "exec rm -rf %s/*", ful_c);
+  sprintf(exec_c, "exec rm -rf %s/*", dirstr_c);
   if (system(exec_c) < 0){
-    fprintf(stderr, "u2_egz_rm() failed\n");
-    c3_assert(0);;
+    uL(fprintf(uH, "u2_egz_rm() failed\n"));
+    c3_assert(0);
   }
 }
 
@@ -264,21 +264,21 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_eghd * led_u)
 
   size_w = read(*fid_i, led_u, sizeof(*led_u));
   if ( sizeof(*led_u) != size_w)  {
-    fprintf(stderr, "egzh: record is corrupt (a)\n");
+    uL(fprintf(uH, "egzh: record is corrupt (a)\n"));
     u2_lo_bail(rec_u);
   }
 
   if (u2_mug('h') != led_u->mag_l ) {
-    fprintf(stderr, "egzh: record is obsolete or corrupt\n");
+    uL(fprintf(uH, "egzh: record is obsolete or corrupt\n"));
     u2_lo_bail(rec_u);
   }
 
   if ( led_u->kno_w != rec_u->kno_w ) {
     //  XX perhaps we should actually do something here
     //
-    fprintf(stderr, "egzh: (not) translating events (old %d, now %d)\n",
+    uL(fprintf(uH, "egzh: (not) translating events (old %d, now %d)\n",
                led_u->kno_w,
-               rec_u->kno_w);
+               rec_u->kno_w));
   }
 
   sev_l = led_u->sev_l;
@@ -300,7 +300,7 @@ c3_t u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_eghd * led_u)
   c3_assert(sev_l != rec_u->sev_l);   //  1 in 2 billion, just retry
 
 
-  fprintf(stderr, "egzh: opened without error\n");
+  uL(fprintf(uH, "egzh: opened without error\n"));
 
   //  check passcode
   // NOTFORCHECKIN  _sist_passcode(rec_u, sal_l);
@@ -325,18 +325,18 @@ void u2_egz_pull_start()
 
   u2R->lug_u.r_fid_i = open(egz_c, O_RDONLY, 0600);
   if (u2R->lug_u.r_fid_i < 0){
-    fprintf(stderr, "u2_egz_pull_start() failed - open - %s\n", strerror(errno));
+    uL(fprintf(uH, "u2_egz_pull_start() failed - open - %s\n", strerror(errno)));
     exit(1);
   }
 
   u2_eghd fileheader_u;
   if ( sizeof(u2_eghd) != read(u2R->lug_u.r_fid_i, &fileheader_u, sizeof(u2_eghd)) ) {
-    fprintf(stderr, "u2_egz_pull_start() failed - read header\n");
+    uL(fprintf(uH, "u2_egz_pull_start() failed - read header\n"));
     exit(1);
   }
 
   if (fileheader_u.mag_l != u2_mug('h')){
-    fprintf(stderr, "u2_egz_pull_start() failed - expecting log format 'h' \n");
+    uL(fprintf(uH, "u2_egz_pull_start() failed - expecting log format 'h' \n"));
     exit(1);
   }
 
@@ -354,7 +354,7 @@ c3_t u2_egz_pull_one(c3_d *  ent_d,                         //  event sequence n
 
   // read the per-event prefix
   if ( sizeof(u2_clpr) != read(u2R->lug_u.r_fid_i, &eventprefix_u, sizeof(u2_clpr)) ) {  
-    fprintf(stderr, "u2_egz_pull_one() failed - read prefix\n");
+    uL(fprintf(uH, "u2_egz_pull_one() failed - read prefix\n"));
     return(c3_false);
   }
 
@@ -366,7 +366,7 @@ c3_t u2_egz_pull_one(c3_d *  ent_d,                         //  event sequence n
   *data_y = (c3_y *) malloc(eventprefix_u.len_w);
   
   if ( *len_w != read(u2R->lug_u.r_fid_i, *data_y, *len_w) ) {  
-    fprintf(stderr, "u2_egz_pull_one() failed - read message\n");
+    uL(fprintf(uH, "u2_egz_pull_one() failed - read message\n"));
     return(c3_false);
   }
 
@@ -400,7 +400,7 @@ u2_noun u2_egz_pull_all(    u2_reck* rec_u,  c3_i fid_i,  u2_bean *  ohh)
     c3_y    msg_type_y;
     u2_noun ova = u2_nul;
 
-    ret_t = u2_egz_pull_one_ova(&  ent_d, &  msg_type_y, & ovo);
+    ret_t = u2_egz_pull_one_ova(&  ent_d, &  msg_type_y, & ova);
 
 
     roe = u2nc(ova, roe);
@@ -440,7 +440,7 @@ u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,   u2_bean *  ohh)
   // Seek to there; new data is beyond that point.
   //
   if ( -1 == lseek64(fid_i, 4ULL * end_d, SEEK_SET) ) {
-    fprintf(stderr, "end_d %llu\n", (long long int) end_d);
+    uL(fprintf(uH, "end_d %llu\n", (long long int) end_d));
     perror("lseek");
     uL(fprintf(uH, "record is corrupt (c)\n"));
     u2_lo_bail(rec_u);
@@ -453,7 +453,7 @@ u2_noun u2_egz_read_all(u2_reck* rec_u, c3_i fid_i,   u2_bean *  ohh)
   }
   rec_u->ent_d = c3_max(las_d + 1ULL, old_d);
 
-  c3_assert(0);; // NOTFORCHECKIN - unimplemented!
+  c3_assert(0); // NOTFORCHECKIN - unimplemented!
   u2_noun uglyhack_u;
   return( uglyhack_u);
 }
@@ -486,11 +486,11 @@ u2_egz_push(c3_y* data_y, c3_w len_w, c3_d seq_d, c3_y msgtype_y)
   // open, write, close file
   c3_i fid_i = open(bas_c, O_CREAT | O_TRUNC | O_WRONLY, 0600);
   if (fid_i < 0){
-    fprintf(stderr, "egz_push() failed - fopen - <<%s>> : %s\n", bas_c, strerror(errno));
+    uL(fprintf(uH, "egz_push() failed - fopen - <<%s>> : %s\n", bas_c, strerror(errno)));
     exit(1);
   }
   if (write(fid_i, data_y, len_w) < len_w){
-    fprintf(stderr, "egz_push() failed - write - %s : %s\n", bas_c, strerror(errno));
+    uL(fprintf(uH, "egz_push() failed - write - %s : %s\n", bas_c, strerror(errno)));
     exit(1);
   }
   if (syncfs(fid_i) < 0){
@@ -515,23 +515,16 @@ u2_egz_push(c3_y* data_y, c3_w len_w, c3_d seq_d, c3_y msgtype_y)
 //
 // A: we end up back here, in the main libuv thread.  And have access to loom.
 //
-
-int here_z = 0; // NOTFORCHECKIN
-int here_zb = 0; // NOTFORCHECKIN
-int here_a = 0; // NOTFORCHECKIN
-int here_b = 0; // NOTFORCHECKIN
-int here_c = 0; // NOTFORCHECKIN
-
+//
 void _egz_finalize_and_emit(uv_async_t* async_u)
 {
+  
+
   clog_thread_baton *  clog_baton_u = (clog_thread_baton *) async_u->data;
 
-  here_b += 1; // NOTFORCHECKIN
-  if (here_b > 800) {   printf("b: %i\n", here_b);}  // NOTFORCHECKIN
-
   if (clog_baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
-    fprintf(stderr, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) clog_baton_u->seq_d);
-    c3_assert(0);;
+    uL(fprintf(uH, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) clog_baton_u->seq_d));
+    c3_assert(0);
   }
 
   // emit here
@@ -550,8 +543,6 @@ void _egz_finalize_and_emit(uv_async_t* async_u)
                       clog_baton_u->ovo,
                       LOG_MSG_POSTCOMMIT);
 
-  free(clog_baton_u); // NOTFORCHECKIN is this correct?
-  free(async_u);
 }
 
 
@@ -562,14 +553,6 @@ void
 _egz_push_in_thread_inner(void * raw_u)
 {
   clog_thread_baton * clog_baton_u = (clog_thread_baton *) raw_u;
-
-  if (LOG_MSG_PRECOMMIT == clog_baton_u -> msg_type_y){
-    here_a += 1; // NOTFORCHECKIN
-    if (here_a > 900) {   printf("a: %i\n", here_a);}  // NOTFORCHECKIN
-  } else if (LOG_MSG_POSTCOMMIT == clog_baton_u -> msg_type_y){
-    here_c += 1; // NOTFORCHECKIN
-    if (here_c > 900) {   printf("c: %i\n", here_c);}  // NOTFORCHECKIN
-  }
 
   // push data. Might take a long time bc of flush()
   //
@@ -608,16 +591,13 @@ _egz_push_in_thread_inner(void * raw_u)
 
     uv_async_t * async_u = malloc(sizeof(uv_async_t));
 
-    here_z += 1; // NOTFORCHECKIN
-    if (here_z > 900) {   printf("z: %i\n", here_z);}  // NOTFORCHECKIN
-
     uv_mutex_lock(& _async_inject_mutex_u );
     c3_w ret_w = uv_async_init(u2_Host.lup_u, 
                                async_u, 
                                &_egz_finalize_and_emit );
     if (ret_w < 0){
-      fprintf(stderr, "egzh: unable to inject event into uv 1\n");
-      c3_assert(0);;
+      uL(fprintf(uH, "egzh: unable to inject event into uv 1\n"));
+      c3_assert(0);
     }
 
 
@@ -628,14 +608,10 @@ _egz_push_in_thread_inner(void * raw_u)
     // pull the trigger
 
     if (uv_async_send(async_u) < 0){
-      fprintf(stderr, "egzh: unable to inject event into uv 2\n");
-      c3_assert(0);;
+      uL(fprintf(uH, "egzh: unable to inject event into uv 2\n"));
+      c3_assert(0);
     }
     uv_mutex_unlock(& _async_inject_mutex_u );
-
-    here_zb += 1; // NOTFORCHECKIN
-    if (here_zb > 900) {   printf("zb: %i\n", here_zb);}  // NOTFORCHECKIN
-
 
   }
   // nothing more to be done in this thread
@@ -655,9 +631,9 @@ _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_t
   if (uv_thread_create(& clog_baton_u->push_thread_u,
                        & _egz_push_in_thread_inner,
                        clog_baton_u) < 0){
-    fprintf(stderr, "egzh: unable to spawn thread for push\n");
-    c3_assert(0);;
-  }
+    uL(fprintf(uH, "egzh: unable to spawn thread for push\n"));
+     c3_assert(0);
+   }
 
 }
 
@@ -718,14 +694,17 @@ void u2_egz_set_consolidator_cb(void (* egzh_cons_cb)(c3_d count_d, c3_d newbyte
 // outputs:
 //    none - should never return
 //
+int _egz_consolidator_run = 1;
+
 void _egz_consolidator(void *arg)
 {
-  fprintf(stdout, "egzh: consolidator live\n");
+  c3_t verbose_t = c3_true;
 
-  while(1) {
-    sleep(CONSOLIDATOR_SLEEP_SECONDS);
+  static c3_d total_events_d = 0;
+  if (verbose_t) { fprintf(stdout, "egzh: consolidator live\n"); }
 
-    fprintf(stdout, "egzh: consolidator awake\n");
+  while(_egz_consolidator_run) {
+    if (verbose_t) {     fprintf(stdout, "egzh: consolidator awake\n");  }
     c3_d count_d = 0;
 
     c3_d eventnum_d;
@@ -739,6 +718,7 @@ void _egz_consolidator(void *arg)
     // deque() will return true right up until there's no more work to do
     while (c3_true == _dequeue(& eventnum_d, &msgtype_y)){
       count_d ++;
+      total_events_d ++;
 
       // 0) open egz file just once per waking cycle 
       //    (this is inside the loop but happens just once)
@@ -747,18 +727,8 @@ void _egz_consolidator(void *arg)
         egzfid_i = open(egzfile_c, O_WRONLY | O_APPEND, 0600);
         if (-1 ==egzfid_i){
           fprintf(stderr, "FATAL: consolidator couldn't read egz %s\n", egzfile_c);
-          c3_assert(0);;
+          c3_assert(0);
         }
-
-        //         if (off_ds < 0){
-        //           fprintf(stderr, "FATAL: consolidator couldn't lseek egz %s\n", egzfile_c);
-        //           c3_assert(0);;
-        //         }
-        //         if (off_ds < sizeof(u2_eghd)){
-        //           fprintf(stderr, "FATAL: consolidator lseek suggests no header %s ; %lli\n", egzfile_c, (long long int) off_ds);
-        //           c3_assert(0);;
-        //         }
-        //         printf("consolidator egz.hope size = %lli\n", (long long int) off_ds); // NOTFORCHECKIN
       }
 
       // 1) open minifile
@@ -767,7 +737,7 @@ void _egz_consolidator(void *arg)
       c3_i minifid_i = open(minifile_c, O_RDONLY, 0400);
       if (-1 == minifid_i){
         fprintf(stderr, "FATAL: consolidator couldn't open minifile %s\n", minifile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
       
       // 2) read minifile
@@ -777,19 +747,19 @@ void _egz_consolidator(void *arg)
       c3_w eventheadersize_w = read(minifid_i, &eventheader_u, sizeof(eventheader_u));
       if (eventheadersize_w < sizeof(u2_clpr)){
         fprintf(stderr, "FATAL: consolidator couldn't read minifile eventheader %s\n", minifile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
       c3_w totalsize_w = eventheader_u.len_w + sizeof(u2_clpr);
 
       // 2.2) seek back a few bytes then read for real
       if  (lseek64(minifid_i, -1 * sizeof(u2_clpr) , SEEK_CUR) < 0){
         fprintf(stderr, "FATAL: consolidator couldn't backup\n");
-        c3_assert(0);;
+        c3_assert(0);
       }
       c3_y*   fullentry_y = (c3_y*) c3_malloc(totalsize_w);
       if (read(minifid_i, fullentry_y, totalsize_w) < totalsize_w) {
         fprintf(stderr, "FATAL: consolidator read insufficient bytes from minifile %s\n", minifile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
 
       // 3.0) append data to egz
@@ -797,7 +767,7 @@ void _egz_consolidator(void *arg)
       c3_w ret_w = write(egzfid_i, fullentry_y, totalsize_w); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't append to egz %s\n", egzfile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
 
       new_bytes_d += totalsize_w;
@@ -806,14 +776,14 @@ void _egz_consolidator(void *arg)
       ret_w = close(minifid_i); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't close minifile %s -- %s\n", strerror(errno), minifile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
 
       // 5) delete minifile
       ret_w =  unlink(minifile_c);
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't delete minifile %s -- %s\n", strerror(errno), minifile_c);
-        c3_assert(0);;
+        c3_assert(0);
       }
 
     } // while _dequeue
@@ -821,13 +791,13 @@ void _egz_consolidator(void *arg)
     // 5) close egz file just once per waking cycle
     if (0 != syncfs(egzfid_i)){
       fprintf(stderr, "FATAL: consolidator couldn't syncfs egzfile: %s\n", strerror(errno));
-      c3_assert(0);;
+      c3_assert(0);
     }
     if (0 != egzfid_i){
       c3_w ret_w = close(egzfid_i); 
       if (ret_w < 0){
         fprintf(stderr, "FATAL: consolidator couldn't close egzfile\n");
-        c3_assert(0);;
+        c3_assert(0);
       }
     }
 
@@ -839,13 +809,15 @@ void _egz_consolidator(void *arg)
       (*_egzh_cons_cb_u)(count_d, new_bytes_d);
     }
 
-    fprintf(stdout, "egzh: consolidator sleeping after doing %lli tasks\n", (long long int) count_d);
+    if (verbose_t) {     fprintf(stdout, "egzh: consolidator sleeping after doing %lli tasks (%lli total)\n", (long long int) count_d, (long long int) total_events_d);  }
+    sleep(CONSOLIDATOR_SLEEP_SECONDS);
+
   } // while(1)
 }
 
 void u2_egz_init()
 {
-  fprintf(stdout, "egzh: egz.hope logging begin\n");
+  uL(fprintf(uH, "egzh: egz.hope logging begin\n"));
 
 
   uv_mutex_init(& _queue_mutex_u);
@@ -854,24 +826,21 @@ void u2_egz_init()
   head_u = NULL;
   tail_u = NULL;
 
-  return; // NOTFORCHECKIN
-
   // note that this new thread is not the libuv event loop and has nothing to do w the libuv event loop
   int ret = uv_thread_create(& u2R->lug_u.egz_consolidator_thread_u,
                              & _egz_consolidator,
                              NULL);
   if (ret < 0){
-    fprintf(stderr, "egzh: consolidator not started\n");
-    c3_assert(0);;
+    uL(fprintf(uH, "egzh: consolidator not started\n"));
+    c3_assert(0);
   }
 
 }
 
 void u2_egz_shutdown()
 {
-  fprintf(stdout, "egzh: egz.hope shutdown\n");
-
-  uv_thread_join(& u2R->lug_u.egz_consolidator_thread_u);
+  _egz_consolidator_run = 0;
+  uL(fprintf(uH, "egzh: egz.hope shutdown\n"));
 }
 
 void u2_egz_admin_dump_egz()
@@ -892,7 +861,7 @@ void u2_egz_admin_dump_egz()
 
 }
 
-// for use in gdb
+// utility funcs for developer use in gdb debugger
 u2_reck *  u2_egz_util_get_u2a() {  return(u2A); }
 u2_kafk *  u2_egz_util_get_u2k() {  return(u2K); }
 u2_raft *  u2_egz_util_get_u2r() {  return(u2R); }

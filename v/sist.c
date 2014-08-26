@@ -233,8 +233,8 @@ void u2_sist_get_pill_filestr(c3_c * str_w, int len_w)
   }
 }
 
-// NOTFORCHECKIN - we call getpwuid() over and over - centralize it
-// in one place and store it so we don't do OS calls.
+//  we could call getpwuid() over and over - centralize it in one
+// place and store it so we don't do OS calls.
 
 void u2_sist_get_pier_dirstr(c3_c * str_w, int len_w)
 {
@@ -895,7 +895,8 @@ _sist_rest(u2_reck* rec_u)
   if (kafk_b) {
     // do nothing; not relevant to kafka
   } else {
-    u2_egz_rewrite_header(rec_u, fid_i, ohh, & led_u);
+    // do nothing
+    // _u2_egz_note_larger_size(rec_u, fid_i, ohh, & led_u);
   }
 
   // success

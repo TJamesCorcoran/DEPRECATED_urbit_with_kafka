@@ -155,7 +155,6 @@ _raft_alloc(uv_handle_t* had_u,
   *buf = uv_buf_init(ptr_v, len_i);
 }
 
-
 /* _raft_election_rand(): election timeout.
 */
 static c3_w
@@ -1644,13 +1643,15 @@ _raft_comm(u2_reck* rec_u, c3_d bid_d)
   egg_u = rec_u->ova.egg_u;
   while ( egg_u ) {
     if ( egg_u->ent_d <= bid_d ) {
-      egg_u->cit = u2_yes;
+      egg_u->log = u2_yes;
     } else break;
     egg_u = egg_u->nex_u;
   }
   u2_lo_shut(u2_yes);
 }
 
+// When we send something to raft w _raft_push(), we ask libuv to call us back later.
+// This is later.
 static void
 _raft_comm_cb(uv_timer_t* tim_u)
 {
@@ -1658,41 +1659,6 @@ _raft_comm_cb(uv_timer_t* tim_u)
 
   _raft_comm(u2A, raf_u->ent_d);
 }
-
-
-static c3_d
-_raft_push(u2_raft* raf_u, c3_w* bob_w, c3_w len_w)
-{
-  c3_assert(raf_u->typ_e == u2_raty_lead);
-  c3_assert(0 != bob_w && 0 < len_w);
-
-// static void
-// _raft_comm(u2_reck* rec_u, c3_d bid_d)
-// {
-//   u2_cart* egg_u;
-// 
-//   u2_lo_open();
-// 
-//   egg_u = rec_u->ova.egg_u;
-//   while ( egg_u ) {
-//     if ( egg_u->ent_d <= bid_d ) {
-//       egg_u->log = u2_yes;
-//     } else break;
-//     egg_u = egg_u->nex_u;
-//   }
-//   u2_lo_shut(u2_yes);
-// }
-// 
-// When we send something to raft w _raft_push(), we ask libuv to call us back later.
-// This is later.
-// static void
-// _raft_comm_cb(uv_timer_t* tim_u, c3_i sas_i)
-// {
-//   u2_raft* raf_u = tim_u->data;
-// 
-//   _raft_comm(u2A, raf_u->ent_d);
-// }
-// 
 
 
 
