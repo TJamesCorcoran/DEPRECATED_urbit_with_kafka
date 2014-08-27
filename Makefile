@@ -317,7 +317,6 @@ VERE_OFILES=\
        $(V_OFILES) \
        $(MAIN_FILE)
 
-
 TEST_OFILES=\
        $(BASE_OFILES) \
        $(CRE2_OFILES) \
@@ -326,7 +325,19 @@ TEST_OFILES=\
        $(T_OFILES) \
        $(TEST_FILE)
 
+# This is a silly hack necessitated by the fact that libuv uses configure
+#   
+#    * Making 'all' obviously requires outside/libuv, which requires the libuv Makefile to be created.
+#    * Making distclean on outside/libuv destroys the makefile.
+#    * ...so configuring outside/libuv is parodoxically required in order to distclean it!
+#    * But what if developer types 'make distclean all' ?
+#    * first target makes libuv Makefile, then destroys it...and second target knows that it was made.
+#    * ...so second target borks.
+#    * Solution: make libuv not only depend on its own Makefile, but on a side effect of creating its own makefile.
+#    
 LIBUV_MAKEFILE=outside/libuv_0.11/Makefile
+LIBUV_MAKEFILE2=outside/libuv_0.11/config.log
+
 
 LIBUV=outside/libuv_0.11/.libs/libuv.a
 
@@ -346,10 +357,11 @@ test: $(BIN)/test
 
 all: vere test
 
-$(LIBUV_MAKEFILE):
-	cd outside/libuv_0.11 ; sh autogen.sh ; ./configure ; make
 
-$(LIBUV): $(LIBUV_MAKEFILE)
+$(LIBUV_MAKEFILE) $(LIBUV_MAKEFILE2):
+	cd outside/libuv_0.11 ; sh autogen.sh ; ./configure
+
+$(LIBUV): $(LIBUV_MAKEFILE) $(LIBUV_MAKEFILE2)
 	$(MAKE) -C outside/libuv_0.11 all-am
 
 $(LIBKAFKACLIENT):
@@ -407,7 +419,7 @@ debinstall:
 	cp urb/urbit.pill $(DESTDIR)/usr/share/urb
 	cp -R urb/zod $(DESTDIR)/usr/share/urb
 
-clean:
+clean: 
 	$(RM) $(VERE_OFILES) $(BIN)/vere vere.pkg
 
 distclean: clean $(LIBUV_MAKEFILE)
