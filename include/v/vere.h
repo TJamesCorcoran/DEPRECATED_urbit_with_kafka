@@ -424,7 +424,7 @@
         c3_i r_fid_i;                       //  read  file descriptor
 
         c3_d len_d;                         //  length in words
-		uv_thread_t egz_consolidator_thread_u;  // Consolidator runs in thread. This is handle.
+		uv_thread_t egz_consolidator_thread_u;  // Consolidator runs in a thread. 
 
       } u2_ulog;
 
@@ -442,6 +442,8 @@
 		// not our sequence number; kafka's sequence number
 		c3_ds                  largest_offset_seen_ds;         // largest overall
 		c3_ds                  largest_offset_seen_precom_ds;  // largest precommit msg id (for testing, mostly)
+
+		uv_thread_t kafk_poller_thread_u;  // Poller runs in a thread. 
 
       } u2_kafk;
 
