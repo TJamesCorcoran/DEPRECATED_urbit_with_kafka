@@ -543,6 +543,10 @@ void _egz_finalize_and_emit(uv_async_t* async_u)
                       clog_baton_u->ovo,
                       LOG_MSG_POSTCOMMIT);
 
+// NOTFORCHECKIN  we need to do this somewhere...but here?  free(clog_baton_u); 
+// NOTFORCHECKIN  we need to do this somewhere...but here?  free(async_u);
+
+
 }
 
 
