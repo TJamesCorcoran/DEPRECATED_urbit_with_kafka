@@ -879,7 +879,7 @@ _http_request(u2_hreq* req_u)
                                     req_u->hon_u->coq_l,
                                     req_u->seq_l);
 
-    u2_reck_plan(u2_Host.arv_u,
+    u2_proc_plan(u2_Host.arv_u,
                  pox,
                  u2nq(c3__this,
                       req_u->hon_u->htp_u->sec,
@@ -897,7 +897,7 @@ _http_request_dead(u2_hreq* req_u)
                                   req_u->hon_u->coq_l,
                                   req_u->seq_l);
 
-  u2_reck_plan(u2_Host.arv_u,
+  u2_proc_plan(u2_Host.arv_u,
                pox,
                u2nc(c3__thud, u2_nul));
 }
@@ -984,7 +984,7 @@ u2_http_ef_bake(void)
 {
   u2_noun pax = u2nq(u2_blip, c3__http, u2k(u2A->sen), u2_nul);
 
-  u2_reck_plan(u2A, pax, u2nc(c3__born, u2_nul));
+  u2_proc_plan(u2A, pax, u2nc(c3__born, u2_nul));
 }
 
 /* u2_http_ef_thou(): send %thou effect (incoming response) to http.

@@ -956,7 +956,7 @@ _unix_desk_sync_into(u2_noun  who,
     pax = u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul);
     fav = u2nq(c3__into, who, syd, u2nc(u2_yes, doz));
 
-    u2_reck_plan(u2A, pax, fav);
+    u2_proc_plan(u2A, pax, fav);
   }
   else {
     u2z(who); u2z(syd); u2z(xun); u2z(bur);
@@ -1300,7 +1300,7 @@ u2_unix_ef_init(u2_noun who)
   // u2_sist_get_doturb_dirstr(base_c, 2048);
   //  u2_unix_acquire(base_c);
 
-  u2_reck_plan(u2A, u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul),
+  u2_proc_plan(u2A, u2nq(u2_blip, c3__sync, u2k(u2A->sen), u2_nul),
                     u2nq(c3__into, who,
                                    u2_blip,
                                    u2nt(u2_yes, u2nc(0, 0), u2_nul)));
@@ -1419,7 +1419,7 @@ _unix_time_cb(uv_timer_t* tim_u)
 {
   u2_lo_open();
   {
-    u2_reck_plan
+    u2_proc_plan
       (u2A,
        u2nt(u2_blip, c3__clay, u2_nul),
        u2nc(c3__wake, u2_nul));

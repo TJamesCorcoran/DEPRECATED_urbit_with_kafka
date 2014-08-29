@@ -30,6 +30,7 @@ typedef struct _clog_thread_baton_s
   c3_d        seq_d;
   c3_y        msg_type_y;  // yes, this is also stored in the header. Cleaner this way, IMO.
   u2_noun     ovo;
+  u2_noun     vir;
   uv_thread_t push_thread_u;
 } clog_thread_baton;
 

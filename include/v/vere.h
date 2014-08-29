@@ -408,15 +408,6 @@
         void*           tel_u;             //  telnet context
       } u2_utel;
 
-    /* u2_raty: raft server type.
-    */
-      typedef enum {
-        u2_raty_none,
-        u2_raty_foll,
-        u2_raty_cand,
-        u2_raty_lead
-      } u2_raty;
-
     /* u2_ulog: egzh log.
     */
       typedef struct {
@@ -448,7 +439,7 @@
       } u2_kafk;
 
 
-    /* u2_raft: raft state.
+    /* u2_proc: raft state.
     */
       typedef struct {
         uv_tcp_t         wax_u;             //  TCP listener
@@ -457,7 +448,6 @@
                                             //     FIXME: it would be nice to move the global kafk in here!!!
         c3_d             ent_d;             //  last log index
         c3_w             lat_w;             //  last log term
-        u2_raty          typ_e;             //  server type
         struct _u2_rnam* nam_u;             //  list of peers
         struct _u2_rcon* run_u;             //  unknown connections
         c3_w             pop_w;             //  population count
@@ -467,7 +457,7 @@
         c3_w             tem_w;             //  current term
         c3_c*            vog_c;             //  who we voted for this term
         //  end persistent state
-      } u2_raft;
+      } u2_proc;
 
     /* u2_rreq: raft request.
     */
@@ -494,7 +484,7 @@
         u2_rbuf*         red_u;             //  read buffer
         u2_bean          red;               //  u2_yes on new data
         u2_rbuf*         wri_u;             //  write buffer
-        u2_raft*         raf_u;             //  back-reference to server
+        u2_proc*         raf_u;             //  back-reference to server
         u2_rreq*         out_u;             //  exit of request queue
         u2_rreq*         tou_u;             //  entry of request queue
         struct _u2_rcon* nex_u;             //  pointer to next con
@@ -521,11 +511,9 @@
         c3_c*   imp_c;                      //  -I, czar name
         c3_c*   kaf_c;                      //  -K, kafka hosts 
         c3_c*   nam_c;                      //  -n, unix hostname
-        c3_c*   raf_c;                      //  -r, raft flotilla
         c3_w    kno_w;                      //  -k, kernel version
         c3_w    fuz_w;                      //  -f, fuzz testing
         c3_s    por_s;                      //  -p, ames port
-        c3_s    rop_s;                      //  -l, raft port
         u2_bean abo;                        //  -a
         u2_bean bat;                        //  -b, batch create
         u2_bean gab;                        //  -g
@@ -574,7 +562,7 @@
   **/
     c3_global  u2_host  u2_Host;
     c3_global  u2_wire  u2_Wire;
-    c3_global  u2_raft  u2_Raft;
+    c3_global  u2_proc  u2_Proc;
     c3_global  u2_kafk  u2_Kafk;
     c3_global  c3_c*    u2_Local;
     c3_global  c3_c*    u2_System;
@@ -585,7 +573,7 @@
     c3_global  u2_bean  u2_Flag_Verbose;
 
 #     define u2L  u2_Host.lup_u             //  global event loop
-#     define u2R  (&(u2_Raft))
+#     define u2R  (&(u2_Proc))
 #     define u2S  u2_Host.ssl_u
 #     define u2K  (&(u2_Kafk))
 
@@ -827,22 +815,28 @@
         void
         u2_reck_wind(u2_reck* rec_u, u2_noun now);
 
-      /* u2_reck_plan(): queue ovum (external).
+      //----------------------------------------
+      //  proc - process ova
+      //----------------------------------------
+
+      /* u2_proc_plan(): queue ovum (external).
       */
         void
-        u2_reck_plan(u2_reck* rec_u,
+        u2_proc_plan(u2_reck* rec_u,
                      u2_noun  pax,
                      u2_noun  fav);
 
-      /* u2_reck_plow(): queue ovum list in order (external).
+      /* u2_proc_plow(): queue ovum list in order (external).
       */
         void
-        u2_reck_plow(u2_reck* rec_u, u2_noun ova);
+        u2_proc_plow(u2_reck* rec_u, u2_noun ova);
 
-      /* u2_reck_work(): flush ova (unprotected).
+      /* u2_proc_emit(): callback after logging has succeeded
       */
-        void
-        u2_reck_work(u2_reck* rec_u);
+		void u2_proc_emit(c3_d        seq_d,
+						  u2_noun     ovo,
+						  u2_noun     vir);
+
 
 
     /**  Main loop, new style.
@@ -1146,22 +1140,15 @@
         void
         u2_http_io_poll(void);
 
-    /** Raft log syncing.
-    **/
-      /* u2_raft_readopt(): parse command line options.
-      */
-        u2_rnam*
-        u2_raft_readopt(const c3_c* arg_c, c3_c* our_c, c3_s oup_s);
-
-      /* u2_raft_init(): start Raft process.
+      /* u2_proc_init(): start Raft process.
       */
         void
-        u2_raft_init(void);
+        u2_proc_init(void);
 
-      /* u2_raft_work(): poke, kick, and push pending events.
+      /* u2_proc_work(): poke, kick, and push pending events.
       */
         void
-        u2_raft_work(u2_reck* rec_u);
+        u2_proc_work(u2_reck* rec_u);
 
 
 

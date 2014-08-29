@@ -72,7 +72,7 @@ _term_close_cb(uv_handle_t* han_t)
   {
     u2_noun tid = u2_dc("scot", c3__ud, tty_u->tid_l);
     u2_noun pax = u2nq(u2_blip, c3__term, tid, u2_nul);
-    u2_reck_plan(u2A, u2k(pax), u2nc(c3__hook, u2_nul));
+    u2_proc_plan(u2A, u2k(pax), u2nc(c3__hook, u2_nul));
     u2z(pax);
   }
   free(tty_u);
@@ -304,8 +304,8 @@ _term_listen_cb(uv_stream_t *wax_u, int sas_i)
     {
       u2_noun tid = u2_dc("scot", c3__ud, tty_u->tid_l);
       u2_noun pax = u2nq(u2_blip, c3__term, tid, u2_nul);
-      u2_reck_plan(u2A, u2k(pax), u2nc(c3__blew, u2nc(80, 25)));
-      u2_reck_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
+      u2_proc_plan(u2A, u2k(pax), u2nc(c3__blew, u2nc(80, 25)));
+      u2_proc_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
       u2z(pax);
     }
 
@@ -676,7 +676,7 @@ _term_io_belt(u2_utty* uty_u, u2_noun  blb)
   u2_noun tid = u2_dc("scot", c3__ud, uty_u->tid_l);
   u2_noun pax = u2nq(u2_blip, c3__term, tid, u2_nul);
 
-  u2_reck_plan(u2A, pax, u2nc(c3__belt, blb));
+  u2_proc_plan(u2A, pax, u2nc(c3__belt, blb));
 }
 
 /* _tel_event(): telnet sucker
@@ -748,7 +748,7 @@ _tel_opt(_te_nvt* nvt, telnet_byte opt, _to_evt* evt)
       tid = u2_dc("scot", c3__ud, tel_u->uty_t.tid_l);
       pax = u2nq(u2_blip, c3__term, tid, u2_nul);
       blu = u2nc(col_s, row_s);
-      u2_reck_plan(u2A, pax, u2nc(c3__blew, blu));
+      u2_proc_plan(u2A, pax, u2nc(c3__blew, blu));
       break;
     }
   }
@@ -977,7 +977,7 @@ u2_term_ef_winc(void)
 {
   u2_noun pax = u2nq(u2_blip, c3__term, '1', u2_nul);
 
-  u2_reck_plan(u2A, pax, u2nc(c3__blew, u2_term_get_blew(1)));
+  u2_proc_plan(u2A, pax, u2nc(c3__blew, u2_term_get_blew(1)));
 }
 
 /* u2_term_ef_ctlc(): send ^C on console.
@@ -987,7 +987,7 @@ u2_term_ef_ctlc(void)
 {
   u2_noun pax = u2nq(u2_blip, c3__term, '1', u2_nul);
 
-  u2_reck_plan(u2A, pax, u2nt(c3__belt, c3__ctl, 'c'));
+  u2_proc_plan(u2A, pax, u2nt(c3__belt, c3__ctl, 'c'));
 }
 
 /* u2_term_ef_boil(): initial effects for loaded servers.
@@ -998,10 +998,10 @@ u2_term_ef_boil(void)
   {
     u2_noun pax = u2nq(u2_blip, c3__term, '1', u2_nul);
 
-    //  u2_reck_plan(u2A, u2k(pax), u2nc(c3__init, u2k(u2h(u2A->own))));
-    u2_reck_plan(u2A, u2k(pax), u2nc(c3__harm, u2_nul));
-    u2_reck_plan(u2A, u2k(pax), u2nc(c3__blew, u2_term_get_blew(1)));
-    u2_reck_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
+    //  u2_proc_plan(u2A, u2k(pax), u2nc(c3__init, u2k(u2h(u2A->own))));
+    u2_proc_plan(u2A, u2k(pax), u2nc(c3__harm, u2_nul));
+    u2_proc_plan(u2A, u2k(pax), u2nc(c3__blew, u2_term_get_blew(1)));
+    u2_proc_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
 
     u2z(pax);
   }
@@ -1014,9 +1014,9 @@ u2_term_ef_bake(u2_noun  fav)
 {
   u2_noun pax = u2nq(u2_blip, c3__term, '1', u2_nul);
 
-  u2_reck_plan(u2A, u2k(pax), u2nc(c3__boot, fav));
-  u2_reck_plan(u2A, u2k(pax), u2nc(c3__blew, u2_term_get_blew(1)));
-  u2_reck_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
+  u2_proc_plan(u2A, u2k(pax), u2nc(c3__boot, fav));
+  u2_proc_plan(u2A, u2k(pax), u2nc(c3__blew, u2_term_get_blew(1)));
+  u2_proc_plan(u2A, u2k(pax), u2nc(c3__hail, u2_nul));
 
   u2z(pax);
 }

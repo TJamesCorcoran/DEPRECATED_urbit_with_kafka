@@ -456,7 +456,7 @@ u2_lo_shut(u2_bean inn)
 
   //  process actions
   //
-  u2_raft_work(u2A);
+  u2_proc_work(u2A);
 
   // u2_lo_grab("lo_shut b", u2_none);
 
@@ -469,9 +469,9 @@ u2_lo_shut(u2_bean inn)
   //  for input operations, poll fs (XX not permanent)
   //  XX remove raty_lead guard
   //
-  if ( u2R->typ_e == u2_raty_lead && u2_yes == inn ) {
-    u2_unix_ef_look();
-  }
+// NOTFORCHECKIN  if ( u2R->typ_e == u2_raty_lead && u2_yes == inn ) {
+// NOTFORCHECKIN    u2_unix_ef_look();
+// NOTFORCHECKIN  }
 
   // u2_lo_grab("lo_shut d", u2_none);
 
@@ -494,123 +494,6 @@ u2_lo_shut(u2_bean inn)
     _lo_poll();
   }
 }
-
-#if 0
-//  _lo_bench_noop(): benchmark no-op events.
-//
-static void
-_lo_bench_noop(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_reck_plan(u2A, u2nq(u2_blip, c3__term, 1, u2_nul),
-                      u2nc(c3__noop, u2_nul));
-  }
-
-  u2_raft_work(u2A);
-}
-
-//  _lo_bench_scot_p(): benchmark prettyprint.
-//
-static void
-_lo_bench_scot_p(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_noun soc = u2_dc("scot", 'p', u2k(u2A->now));
-
-    u2z(soc);
-  }
-}
-
-//  _lo_bench_slay_p(): benchmark prettyprint.
-//
-static void
-_lo_bench_slay_p(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_noun soc = u2_dc("scot", 'p', u2k(u2A->now));
-    u2_noun dub = u2_do("slay", soc);
-
-    u2z(dub);
-  }
-}
-
-//  _lo_bench_scot_da(): benchmark prettyprint.
-//
-static void
-_lo_bench_scot_da(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_noun soc = u2_dc("scot", c3__da, u2k(u2A->now));
-
-    u2z(soc);
-  }
-}
-
-//  _lo_bench_dec(): benchmark decrement.
-//
-static void
-_lo_bench_dec(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_noun soc = u2_do("dec", u2k(u2A->now));
-
-    u2z(soc);
-  }
-}
-
-//  _lo_bench_scot_ud(): benchmark prettyprint.
-//
-static void
-_lo_bench_scot_ud(c3_w num_w)
-{
-  c3_w i_w;
-
-  for ( i_w = 0; i_w < num_w; i_w++ ) {
-    u2_noun soc = u2_dc("scot", c3__ud, u2k(u2A->now));
-
-    u2z(soc);
-  }
-}
-
-//  _lo_bench(): lo-tech profiling.
-//
-static void
-_lo_bench(const c3_c* lab_c, void (*fun)(c3_w), c3_w num_w)
-{
-  u2_noun old, new;
-
-  uL(fprintf(uH, "bench: %s: start...\n", lab_c));
-  u2_reck_time(u2A);
-  old = u2k(u2A->now);
-
-  fun(num_w);
-
-  u2_reck_time(u2A);
-  new = u2k(u2A->now);
-  {
-    c3_w tms_w = (c3_w)u2_time_gap_ms(old, new);
-
-    if ( tms_w > (10 * num_w) ) {
-      uL(fprintf(uH, "bench: %s*%d: %d ms, %d ms each.\n",
-                      lab_c, num_w, tms_w, (tms_w / num_w)));
-    }
-    else {
-      uL(fprintf(uH, "bench: %s*%d: %d ms, %d us each.\n",
-                      lab_c, num_w, tms_w, ((tms_w * 1000) / num_w)));
-    }
-  }
-}
-#endif
 
 /*  u2_lo_show(): generic noun print.
 */
@@ -660,7 +543,7 @@ u2_lo_loop()
   }
 
   // set up arvo processing (timeout clock, etc.)
-  u2_raft_init();
+  u2_proc_init();
 
 
   // head into event loop
@@ -684,7 +567,7 @@ u2_lo_lead(u2_reck* rec_u)
   _lo_talk();
   {
     u2_unix_ef_look();
-    u2_reck_plan(rec_u, u2nt(u2_blip, c3__ames, u2_nul),
+    u2_proc_plan(rec_u, u2nt(u2_blip, c3__ames, u2_nul),
                         u2nc(c3__kick, u2k(rec_u->now)));
   }
   _lo_poll();

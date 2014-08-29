@@ -703,47 +703,47 @@ _sist_home(u2_reck* rec_u)
   /* _sist_zest(): create a new, empty record.
    */
 //  static
- void
+void
     _sist_zest(u2_reck* rec_u)
+{
+  // struct stat buf_b;
+  // c3_c        ful_c[8193];
+  c3_l        sal_l;
+
+  //  Create the ship directory.
+  //
+  _sist_home(rec_u);
+
+  //  Generate a 31-bit salt.
+  //
   {
-    // struct stat buf_b;
-    // c3_c        ful_c[8193];
-    c3_l        sal_l;
+    c3_w rad_w[8];
 
-    //  Create the ship directory.
-    //
-    _sist_home(rec_u);
-
-    //  Generate a 31-bit salt.
-    //
-    {
-      c3_w rad_w[8];
-
-      _sist_rand(rec_u, rad_w);
-      sal_l = (0x7fffffff & rad_w[0]);
-    }
-
-    //  Create and save a passcode (to passcode file)
-    //
-    {
-      c3_w rad_w[8];
-      u2_noun pas;
-
-      _sist_rand(rec_u, rad_w);
-      pas = u2_ci_words(2, rad_w);
-
-      rec_u->key = _sist_fatt(sal_l, u2k(pas));
-      _sist_fast(rec_u, pas, u2_mug(rec_u->key));
-    }
-
-    // Create a new egz file w default header
-    //   Do we really want to do that in all cases, even if using kafka?  Unclear.
-    //   But what if they restart later w egz logging? Then we've got it. <shrug>
-    u2_egz_write_header(rec_u, sal_l);
-
-    //  Work through the boot events.
-    u2_raft_work(rec_u);
+    _sist_rand(rec_u, rad_w);
+    sal_l = (0x7fffffff & rad_w[0]);
   }
+
+  //  Create and save a passcode (to passcode file)
+  //
+  {
+    c3_w rad_w[8];
+    u2_noun pas;
+
+    _sist_rand(rec_u, rad_w);
+    pas = u2_ci_words(2, rad_w);
+
+    rec_u->key = _sist_fatt(sal_l, u2k(pas));
+    _sist_fast(rec_u, pas, u2_mug(rec_u->key));
+  }
+
+  // Create a new egz file w default header
+  //   Do we really want to do that in all cases, even if using kafka?  Unclear.
+  //   But what if they restart later w egz logging? Then we've got it. <shrug>
+  u2_egz_write_header(rec_u, sal_l);
+
+  //  Work through the boot events.
+  u2_proc_work(rec_u);
+}
 
   /* _sist_make(): boot from scratch.
    */

@@ -122,13 +122,6 @@ _main_getopt(c3_i argc, c3_c** argv)
         }
         break;
       }
-      case 'l': {
-        if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
-          fprintf(stderr, "problem with -l\n");
-          return u2_no;
-        } else u2_Host.ops_u.rop_s = arg_w;
-        break;
-      }
       case 'n': {
         u2_Host.ops_u.nam_c = strdup(optarg);
         break;
@@ -138,10 +131,6 @@ _main_getopt(c3_i argc, c3_c** argv)
           fprintf(stderr, "problem with -p\n");
           return u2_no;
         } else u2_Host.ops_u.por_s = arg_w;
-        break;
-      }
-      case 'r': {
-        u2_Host.ops_u.raf_c = strdup(optarg);
         break;
       }
       case 'L': { u2_Host.ops_u.loh = u2_yes; break; }
@@ -166,11 +155,6 @@ _main_getopt(c3_i argc, c3_c** argv)
         return u2_no;
       }
     }
-  }
-
-  if ( u2_Host.ops_u.rop_s == 0 && u2_Host.ops_u.raf_c != 0 ) {
-    fprintf(stderr, "The -r flag requires -l.\n");
-    return u2_no;
   }
 
   if ( u2_yes == u2_Host.ops_u.bat ) {
@@ -227,11 +211,9 @@ u2_ve_usage(c3_i argc, c3_c** argv)
   fprintf(stderr, "       [-f ]           // fuzz testing\n");
   fprintf(stderr, "       [-g ]           // ? \n");
   fprintf(stderr, "       [-k stage]      // kernel version \n");
-  fprintf(stderr, "       [-l ]           // raft port\n");
   fprintf(stderr, "       [-n ]           // unix hostname \n");
   fprintf(stderr, "       [-p ames_port]  // ames port\n");
   fprintf(stderr, "       [-q ]           // quiet\n");
-  fprintf(stderr, "       [-r host ]      // raft flotilla \n");
   fprintf(stderr, "       [-v ]           // verbose\n");
   fprintf(stderr, "       [-F ]           // fake carrier \n");
   fprintf(stderr, "       [-L ]           // local-only networking \n");

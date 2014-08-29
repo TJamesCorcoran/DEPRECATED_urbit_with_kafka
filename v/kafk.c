@@ -167,8 +167,9 @@ void _kafka_finalize_and_emit(uv_async_t* async_u)
     c3_assert(0);
   }
 
-  // emit here
-  // NOTFORCHECKIN
+  u2_proc_emit(baton_u->seq_d, 
+               baton_u->ovo,
+               baton_u->vir);
 
   // after success we can log a second time
   //
@@ -349,12 +350,13 @@ void u2_kafk_push(c3_y * msg_y, c3_w len_w, clog_thread_baton * baton_u)
 // copy-and-paste programming; see also u2_egz_push_ova()
 //
 // input:
-//    * rec_u
-//    * ovo
+//    * ovo      - the actual ovo to be logged
+//    * vir      - data opaque to the logging process; passed back at callback. for use in proc.c
+//    * msg type - { LOG_MSG_PRECOMMIT | LOG_MSG_POSTCOMMIT }
 // return:
 //    * id of log msg
 c3_d
-u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
+u2_kafk_push_ova(u2_noun ovo, u2_noun vir, c3_y msg_type_y)
 {
 
   c3_w   data_len_w;
@@ -378,6 +380,7 @@ u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
   baton_u->seq_d         = seq_d;
   baton_u->msg_type_y    = msg_type_y;
   baton_u->ovo           = ovo;
+  baton_u->vir           = vir;
   memset(& baton_u->push_thread_u, 0 , sizeof(uv_thread_t));
 
 

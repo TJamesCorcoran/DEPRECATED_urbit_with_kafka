@@ -9,14 +9,14 @@ void u2_kafk_init(void);
 
 // push (write)
 void u2_kafk_push(c3_y *   raw_y, c3_w kafk_len_w, clog_thread_baton * baton_u);
-c3_d u2_kafk_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y);
+c3_d u2_kafk_push_ova(u2_noun ovo, u2_noun vir, c3_y msg_type_y);
 
 
 // pull (read)
-void u2_kafk_pull_start(    c3_d  start_offset_c);               
-c3_t u2_kafk_pull_one(    c3_d * ent_d, c3_y * msg_type_y, c3_w * len_w, c3_y ** buf_y); 
-c3_t u2_kafk_pull_one_ova(c3_d * ent_d, c3_y * msg_type_y, u2_noun * ovo);
-u2_noun  u2_kafk_pull_all(u2_reck* rec_u,  u2_bean *  ohh);
+void u2_kafk_pull_start(  c3_d  start_offset_c);               
+c3_t u2_kafk_pull_one(    c3_d * ent_d			, c3_y * msg_type_y, c3_w * len_w, c3_y ** buf_y); 
+c3_t u2_kafk_pull_one_ova(c3_d * ent_d			, c3_y * msg_type_y, u2_noun * ovo);
+u2_noun  u2_kafk_pull_all(u2_reck* rec_u		, u2_bean *  ohh);
 
 
 // shutdown

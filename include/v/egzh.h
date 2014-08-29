@@ -25,7 +25,7 @@ c3_t     u2_egz_open(u2_reck* rec_u, c3_i * fid_i, u2_eghd * led_u);
 
 // push (write)
 void     u2_egz_push(c3_y* bob_y, c3_w len_w, c3_d seq_d, c3_y msgtype_y);
-c3_d     u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y);
+c3_d     u2_egz_push_ova(u2_noun ovo, u2_noun vir, c3_y msg_type_y);
 
 // pull (read)
 void    u2_egz_pull_start();

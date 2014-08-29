@@ -14,14 +14,14 @@
 		// NOTE: tasks associated with 'pre' and 'done' are done in
 		//       seperate threads.  Completion order is unspecified,
 		//       but once BOTH are done we can proceed to emitting
-		//       side effects, updating state.  See raft.c foobar()
+		//       side effects, updating state.  See proc.c foobar()
 		//       and foobar_completion() for details, mutex, etc.
 		//
         u2_bean log;                      //  message successfully logged?
         u2_bean done;                     //  arvo processing done?
         u2_bean emit;                     //  ?
 
-        c3_d    ent_d;                    //  entry in raft queue?
+        c3_d    ent_d;                    //   queue sequence #
         void (*clr_f)                     //  ovum processing failed
             (struct _u2_reck *rec_u,      //  system
              u2_noun,                     //  egg itself

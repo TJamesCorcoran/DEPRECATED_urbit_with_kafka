@@ -287,7 +287,7 @@ V_OFILES=\
        v/kafk.o \
        v/clog.o \
        v/loop.o \
-       v/raft.o \
+       v/proc.o \
        v/reck.o \
        v/save.o \
        v/sist.o \

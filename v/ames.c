@@ -173,7 +173,7 @@ u2_ames_ef_bake(void)
 {
   u2_noun pax = u2nq(u2_blip, c3__newt, u2k(u2A->sen), u2_nul);
 
-  u2_reck_plan(u2A, pax, u2nc(c3__barn, u2_nul));
+  u2_proc_plan(u2A, pax, u2nc(c3__barn, u2_nul));
 }
 
 /* u2_ames_ef_send(): send packet to network (v4).
@@ -245,7 +245,7 @@ _ames_time_cb(uv_timer_t* tim_uo)
 
   sam_u->law_w = time(0);
   {
-    u2_reck_plan
+    u2_proc_plan
       (u2A,
        u2nt(u2_blip, c3__ames, u2_nul),
        u2nc(c3__wake, u2_nul));
@@ -276,7 +276,7 @@ _ames_recv_cb(uv_udp_t*        wax_u,
       c3_w                pip_w = ntohl(add_u->sin_addr.s_addr);
 
       // fprintf(stderr, "ames: plan\r\n");
-      u2_reck_plan
+      u2_proc_plan
         (u2A,
          u2nt(u2_blip, c3__ames, u2_nul),
          u2nt(c3__hear,

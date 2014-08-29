@@ -428,7 +428,7 @@ _reck_kick_term(u2_reck* rec_u, u2_noun pox, c3_l tid_l, u2_noun fav)
     case c3__bbye:
     {
       u2_reck_sync(rec_u);
-      // u2_reck_plan(rec_u, pox, u2nc(c3__helo, u2_nul));
+      // u2_proc_plan(rec_u, pox, u2nc(c3__helo, u2_nul));
 
       u2z(pox); u2z(fav); return u2_yes;
     } break;
@@ -701,7 +701,7 @@ u2_reck_kick(u2_reck* rec_u, u2_noun ovo)
 #if 0
     if ( (c3__warn != u2h(u2t(ovo))) &&
          (c3__text != u2h(u2t(ovo))) &&
-         (c3__note != u2h(u2t(ovo))) )
+         (c3__note != u2h(u2t(ovo))) ) 
 #endif
 #if 1
     if ( (c3__crud == u2h(u2t(ovo))) )
@@ -711,7 +711,7 @@ u2_reck_kick(u2_reck* rec_u, u2_noun ovo)
          (c3__init == u2h(u2t(ovo))) )
 #endif
     {
-      u2_reck_plan(rec_u, u2nt(u2_blip, c3__term, u2_nul),
+      u2_proc_plan(rec_u, u2nt(u2_blip, c3__term, u2_nul),
                           u2nc(c3__flog, u2k(u2t(ovo))));
     }
     else {
@@ -744,7 +744,7 @@ void
 u2_reck_sync(u2_reck* rec_u)
 {
 #if 0
-  u2_reck_plow(rec_u, u2_sync_reck(rec_u));
+  u2_proc_plow(rec_u, u2_sync_reck(rec_u));
 #endif
 }
 
@@ -778,7 +778,7 @@ void
 u2_reck_http_request(u2_reck* rec_u, u2_bean sec, u2_noun pox, u2_noun req)
 {
   // uL(fprintf(uH, "http: request\n"));
-  u2_reck_plan(rec_u, pox, u2nq(c3__this, sec, 0, req));
+  u2_proc_plan(rec_u, pox, u2nq(c3__this, sec, 0, req));
 }
 
 /* u2_reck_prick(): query the reck namespace (unprotected).
@@ -806,37 +806,3 @@ u2_reck_prick(u2_reck* rec_u, u2_noun hap)
   return que;
 }
 
-/* u2_reck_plan(): queue ovum (external).
-*/
-void
-u2_reck_plan(u2_reck* rec_u,
-             u2_noun  pax,
-             u2_noun  fav)
-{
-  if ( u2_raty_lead == u2R->typ_e ) {
-    u2_noun egg = u2nc(pax, fav);
-    rec_u->roe = u2nc(u2nc(u2_nul, egg), rec_u->roe);
-  }
-  else {
-    c3_c* hed_c = u2_cr_string(u2h(u2t(pax)));
-    uL(fprintf(uH, "reck: dropping roe from %s\n", hed_c));
-    free(hed_c);
-    u2z(pax); u2z(fav);
-  }
-}
-
-/* u2_reck_plow(): queue multiple ova (external).
-*/
-void
-u2_reck_plow(u2_reck* rec_u, u2_noun ova)
-{
-  u2_noun ovi = ova;
-
-  while ( u2_nul != ovi ) {
-    u2_noun ovo=u2h(ovi);
-
-    u2_reck_plan(rec_u, u2k(u2h(ovo)), u2k(u2t(ovo)));
-    ovi = u2t(ovi);
-  }
-  u2z(ova);
-}

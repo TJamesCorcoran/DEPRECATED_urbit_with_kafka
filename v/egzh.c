@@ -39,7 +39,7 @@ int syncfs(int fd);
 #define CONSOLIDATOR_SLEEP_SECONDS  1
 
 // forward prototypes
-void _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_type_y);
+void _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, u2_noun vir, c3_y msg_type_y);
 
 //----------
 // linked list to hold names of unconsolidated minifiles
@@ -520,30 +520,32 @@ void _egz_finalize_and_emit(uv_async_t* async_u)
 {
   
 
-  clog_thread_baton *  clog_baton_u = (clog_thread_baton *) async_u->data;
+  clog_thread_baton *  baton_u = (clog_thread_baton *) async_u->data;
 
-  if (clog_baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
-    uL(fprintf(uH, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) clog_baton_u->seq_d));
+  if (baton_u->msg_type_y != LOG_MSG_PRECOMMIT){
+    uL(fprintf(uH, "egzh: ERROR: emit stage for event %lli which is not in PRECOMMIT - state machine panic\n", (long long int) baton_u->seq_d));
     c3_assert(0);
   }
 
-  // emit here
-  // NOTFORCHECKIN
+  u2_proc_emit(baton_u->seq_d, 
+               baton_u->ovo,
+               baton_u->vir);
 
   // after success we can log a second time
   
   // this is a big of a hack: we're operating on data that sort of claims to be opaque to us.
   // ...but it's cool because We Know The Truth (tm)
-  u2_clpr * header_u = (u2_clpr *) clog_baton_u->bob_y;
+  u2_clpr * header_u = (u2_clpr *) baton_u->bob_y;
   header_u -> msg_type_y = LOG_MSG_POSTCOMMIT;
 
-  _egz_push_in_thread(clog_baton_u->bob_y, 
-                      clog_baton_u->len_w,
-                      clog_baton_u->seq_d,
-                      clog_baton_u->ovo,
+  _egz_push_in_thread(baton_u->bob_y, 
+                      baton_u->len_w,
+                      baton_u->seq_d,
+                      baton_u->ovo,
+                      u2_nul,             // don't pass in the vir again, bc there's no need
                       LOG_MSG_POSTCOMMIT);
 
-// NOTFORCHECKIN  we need to do this somewhere...but here?  free(clog_baton_u); 
+// NOTFORCHECKIN  we need to do this somewhere...but here?  free(baton_u); 
 // NOTFORCHECKIN  we need to do this somewhere...but here?  free(async_u);
 
 
@@ -556,23 +558,23 @@ void _egz_finalize_and_emit(uv_async_t* async_u)
 void
 _egz_push_in_thread_inner(void * raw_u)
 {
-  clog_thread_baton * clog_baton_u = (clog_thread_baton *) raw_u;
+  clog_thread_baton * baton_u = (clog_thread_baton *) raw_u;
 
   // push data. Might take a long time bc of flush()
   //
-  u2_egz_push(clog_baton_u->bob_y, 
-              clog_baton_u->len_w, 
-              clog_baton_u->seq_d,
-              clog_baton_u->msg_type_y);
+  u2_egz_push(baton_u->bob_y, 
+              baton_u->len_w, 
+              baton_u->seq_d,
+              baton_u->msg_type_y);
 
   // if this is a precommit, there's more to be done (emit side effects and log again)
   // if it's a post commit, there's not
-  if (LOG_MSG_POSTCOMMIT == clog_baton_u -> msg_type_y){
-    // printf("egzh: 2nd logging complete for event %lli\n", (long long int) clog_baton_u->seq_d);
+  if (LOG_MSG_POSTCOMMIT == baton_u -> msg_type_y){
+    // printf("egzh: 2nd logging complete for event %lli\n", (long long int) baton_u->seq_d);
 
     // this is the second and final time we log this message, therefore we're done w the space
     //
-    free(clog_baton_u->bob_y);
+    free(baton_u->bob_y);
 
   } else {
 
@@ -607,7 +609,7 @@ _egz_push_in_thread_inner(void * raw_u)
 
     // the data pack we created in libuv thread made it here to child
     // thread...and now will go back to libuv thread.
-    async_u->data = (void *) clog_baton_u;
+    async_u->data = (void *) baton_u;
 
     // pull the trigger
 
@@ -629,19 +631,20 @@ _egz_push_in_thread_inner(void * raw_u)
 //   ovo        - used for CB
 //
 void
-_egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_type_y)
+_egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, u2_noun vir, c3_y msg_type_y)
 {
   
-  clog_thread_baton *  clog_baton_u = (clog_thread_baton *) malloc(sizeof(clog_thread_baton));
-  clog_baton_u->bob_y = bob_y;
-  clog_baton_u->len_w = len_w;
-  clog_baton_u->seq_d = seq_d;
-  clog_baton_u->ovo   = ovo;
-  clog_baton_u->msg_type_y = msg_type_y;
+  clog_thread_baton *  baton_u = (clog_thread_baton *) malloc(sizeof(clog_thread_baton));
+  baton_u->bob_y = bob_y;
+  baton_u->len_w = len_w;
+  baton_u->seq_d = seq_d;
+  baton_u->ovo   = ovo;
+  baton_u->vir   = vir;
+  baton_u->msg_type_y = msg_type_y;
 
-  if (uv_thread_create(& clog_baton_u->push_thread_u,
+  if (uv_thread_create(& baton_u->push_thread_u,
                        & _egz_push_in_thread_inner,
-                       clog_baton_u) < 0){
+                       baton_u) < 0){
     uL(fprintf(uH, "egzh: unable to spawn thread for push\n"));
      c3_assert(0);
    }
@@ -652,13 +655,13 @@ _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_t
 // copy-and-paste programming; see also u2_kafka_push_ova()
 //
 // input:
-//    * rec_u
-//    * ovo
+//    * ovo      - the actual ovo to be logged
+//    * vir      - data opaque to the logging process; passed back at callback. for use in proc.c
 //    * msg type - { LOG_MSG_PRECOMMIT | LOG_MSG_POSTCOMMIT }
 // return:
 //    * id of log msg
 c3_d
-u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
+u2_egz_push_ova(u2_noun ovo, u2_noun vir, c3_y msg_type_y)
 {
   c3_w   data_len_w;
   c3_y * data_y;
@@ -674,7 +677,7 @@ u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
 
   // 2) log
   //
-  _egz_push_in_thread(full_y, full_len_w, seq_d, ovo, msg_type_y );
+  _egz_push_in_thread(full_y, full_len_w, seq_d, ovo, vir, msg_type_y );
 
   return(seq_d);
 }
@@ -707,13 +710,13 @@ int _egz_consolidator_run = 1;
 
 void _egz_consolidator(void *arg)
 {
-  c3_t verbose_t = c3_true;
+  c3_t verbose_t = c3_false;
 
   static c3_d total_events_d = 0;
-  if (verbose_t) { fprintf(stdout, "egzh: consolidator live\n"); }
+  if (verbose_t) { fprintf(stdout, "\regzh: consolidator live\n"); }
 
   while(_egz_consolidator_run) {
-    if (verbose_t) {     fprintf(stdout, "egzh: consolidator awake\n");  }
+    if (verbose_t) {     fprintf(stdout, "\regzh: consolidator awake\n");  }
     c3_d count_d = 0;
 
     c3_d eventnum_d;
@@ -735,7 +738,7 @@ void _egz_consolidator(void *arg)
         u2_sist_get_egz_filestr(egzfile_c, 2048);
         egzfid_i = open(egzfile_c, O_WRONLY | O_APPEND, 0600);
         if (-1 ==egzfid_i){
-          fprintf(stderr, "FATAL: consolidator couldn't read egz %s\n", egzfile_c);
+          fprintf(stderr, "\rFATAL: consolidator couldn't read egz %s\n", egzfile_c);
           c3_assert(0);
         }
       }
@@ -873,4 +876,4 @@ void u2_egz_admin_dump_egz()
 // utility funcs for developer use in gdb debugger
 u2_reck *  u2_egz_util_get_u2a() {  return(u2A); }
 u2_kafk *  u2_egz_util_get_u2k() {  return(u2K); }
-u2_raft *  u2_egz_util_get_u2r() {  return(u2R); }
+u2_proc *  u2_egz_util_get_u2r() {  return(u2R); }

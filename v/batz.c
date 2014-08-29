@@ -52,7 +52,7 @@ _batz_time_cb(uv_timer_t* tim_u)
 
   u2_lo_open();
   {
-    u2_reck_plan
+    u2_proc_plan
       (u2A,
        u2nt(u2_blip, c3__batz, u2_nul),
        u2nc(c3__wake, u2_nul));
