@@ -41,9 +41,12 @@ c3_t u2_clog_check_prefix(u2_clpr * prefix_u);
 
 
 void u2_clog_o2b(u2_noun ovo,
-                 c3_w *  malloc_w, 
-                 c3_w *  len_w, 
-                 c3_y ** data_y);
+                 c3_d seq_d,
+                 c3_y msg_type_y,
+                 c3_y ** full_y, 
+                 c3_w *  full_len_w,
+                 c3_y ** data_y,
+                 c3_w *  data_len_w);
 
 
 void u2_clog_b2o(c3_w   len_w, 

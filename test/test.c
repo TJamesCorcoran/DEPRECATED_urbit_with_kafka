@@ -16,6 +16,7 @@ void run_tests()
   // test_kafka_logging_ova_setup();
 
   test_kafk_stress();
+  // test_kafka_logging_ova_setup();
 
   exit(1);
 }

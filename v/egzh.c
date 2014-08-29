@@ -621,6 +621,13 @@ _egz_push_in_thread_inner(void * raw_u)
   // nothing more to be done in this thread
 }
 
+// input:
+//   bob_y      - actually log: pointer to data
+//   len_w      - actually log: len of data
+//   seq_d      - metadata used for minifiles 
+//   msg_type_y - metadata used for minifiles 
+//   ovo        - used for CB
+//
 void
 _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_type_y)
 {
@@ -653,23 +660,21 @@ _egz_push_in_thread(c3_y* bob_y, c3_w len_w, c3_d seq_d, u2_noun ovo, c3_y msg_t
 c3_d
 u2_egz_push_ova(u2_reck* rec_u, u2_noun ovo, c3_y msg_type_y)
 {
-  c3_w len_w;
-  c3_w malloc_w;
+  c3_w   data_len_w;
   c3_y * data_y;
 
-  // 1) convert noun into bytes - pad begining for header
+  c3_w   full_len_w;
+  c3_y * full_y;
+
+  // 1) convert noun into bytes & write clog header
   //
-  u2_clog_o2b(ovo, &malloc_w, & len_w, & data_y);
-
-  // 2) write prefix into padding
-  u2_clpr * eventprefix_u = (u2_clpr *) data_y;
   c3_d seq_d = u2A->ent_d++;
-  eventprefix_u->ent_d = seq_d;
-  eventprefix_u->len_w = len_w;
-  eventprefix_u->msg_type_y = msg_type_y;
+  u2_clog_o2b(ovo, seq_d, msg_type_y,            // inputs
+              &full_y, &full_len_w, & data_y, & data_len_w);  // outputs
 
-  // 3) log
-  _egz_push_in_thread(data_y, malloc_w, seq_d, ovo, msg_type_y );
+  // 2) log
+  //
+  _egz_push_in_thread(full_y, full_len_w, seq_d, ovo, msg_type_y );
 
   return(seq_d);
 }

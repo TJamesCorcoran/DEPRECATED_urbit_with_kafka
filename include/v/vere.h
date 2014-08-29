@@ -440,8 +440,8 @@
 		rd_kafka_topic_t *     topic_cons_handle_u;
 
 		// not our sequence number; kafka's sequence number
-		c3_ds                  largest_offset_seen_ds;         // largest overall
-		c3_ds                  largest_offset_seen_precom_ds;  // largest precommit msg id (for testing, mostly)
+		c3_ds                  largest_offset_seen_precom_ds;  // largest precommit  msg id
+		c3_ds                  largest_offset_seen_pstcom_ds;  // largest postcommit msg id
 
 		uv_thread_t kafk_poller_thread_u;  // Poller runs in a thread. 
 

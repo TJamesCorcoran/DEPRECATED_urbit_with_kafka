@@ -83,9 +83,10 @@ _main_getopt(c3_i argc, c3_c** argv)
     switch ( ch_i ) {
       case 'A': {
         u2_Host.ops_u.adm_c = strdup(optarg);
-        if ((strcmp(optarg, "ltok") != 0) && 
-            (strcmp(optarg, "ktol") != 0) && 
-            (strcmp(optarg, "degz") != 0) ) {
+        if ((strcmp(optarg, "edmp") != 0) && 
+            (strcmp(optarg, "etok") != 0) && 
+            (strcmp(optarg, "ktoe") != 0) &&
+            (strcmp(optarg, "kcnf") != 0) ) {
           fprintf(stderr, "illegal -A subcommand: %s\n",  optarg);
           return u2_no;
 
@@ -93,7 +94,7 @@ _main_getopt(c3_i argc, c3_c** argv)
         break;
       }
       case 'M': {
-        u2_Host.ops_u.mem = u2_yes;
+       u2_Host.ops_u.mem = u2_yes;
         break;
       }
       case 'I': {
@@ -102,24 +103,28 @@ _main_getopt(c3_i argc, c3_c** argv)
       }
       case 'X': {
         if ( 0 != strcmp("wtf", optarg) ) {
+          fprintf(stderr, "problem with -X\n");
           return u2_no;
         } else u2_Host.ops_u.fog = u2_yes;
         break;
       }
       case 'f': {
         if ( u2_no == _main_readw(optarg, 100, &u2_Host.ops_u.fuz_w) ) {
+          fprintf(stderr, "problem with -f\n");
           return u2_no;
         }
         break;
       }
       case 'k': {
         if ( u2_no == _main_readw(optarg, 256, &u2_Host.ops_u.kno_w) ) {
+          fprintf(stderr, "problem with -k\n");
           return u2_no;
         }
         break;
       }
       case 'l': {
         if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
+          fprintf(stderr, "problem with -l\n");
           return u2_no;
         } else u2_Host.ops_u.rop_s = arg_w;
         break;
@@ -130,6 +135,7 @@ _main_getopt(c3_i argc, c3_c** argv)
       }
       case 'p': {
         if ( u2_no == _main_readw(optarg, 65536, &arg_w) ) {
+          fprintf(stderr, "problem with -p\n");
           return u2_no;
         } else u2_Host.ops_u.por_s = arg_w;
         break;
@@ -230,9 +236,10 @@ u2_ve_usage(c3_i argc, c3_c** argv)
   fprintf(stderr, "       [-F ]           // fake carrier \n");
   fprintf(stderr, "       [-L ]           // local-only networking \n");
   fprintf(stderr, "       [-A command ]   // admin tool \n");
-  fprintf(stderr, "                       // * ltok - read log, write it kafka \n");
-  fprintf(stderr, "                       // * ktol - read kafka, write it log \n");
-  fprintf(stderr, "                       // * degz - dump egz to stdou \n");
+  fprintf(stderr, "                       // * edmp - dump egz to stdou \n");
+  fprintf(stderr, "                       // * etok - read egzh log, write it kafka \n");
+  fprintf(stderr, "                       // * ktoe - read kafka, write it egzh log \n");
+  fprintf(stderr, "                       // * kcnf - dump (hardcoded) kafka client config \n");
 
   exit(1);
 }
@@ -445,11 +452,13 @@ main(c3_i   argc,
 
   // booted in admin mode: do a task, then exit
   // booted in user mode: do command loop
-  if (u2_Host.ops_u.adm_c != 0){
-    if (strcmp(u2_Host.ops_u.adm_c, "ltok") ==0) { u2_kafka_admin_egz_to_kafka(); }
-    else if (strcmp(u2_Host.ops_u.adm_c, "ktol") ==0) { u2_kafka_admin_kafka_to_egz(); }
-    else if (strcmp(u2_Host.ops_u.adm_c, "degz") ==0) { u2_egz_admin_dump_egz(); }
-    else  { fprintf(stderr, "unsupported admin mode command %s\n", u2_Host.ops_u.adm_c); exit(1); }
+
+  if (u2_Host.ops_u.adm_c != 0) {
+    if      (strcmp(u2_Host.ops_u.adm_c, "edmp") ==0) { u2_egz_admin_dump_egz(); }
+    else if (strcmp(u2_Host.ops_u.adm_c, "etok") ==0) { u2_kafka_admin_egz_to_kafka(); }
+    else if (strcmp(u2_Host.ops_u.adm_c, "ktoe") ==0) { u2_kafka_admin_kafka_to_egz(); }
+    else if (strcmp(u2_Host.ops_u.adm_c, "kcnf") ==0) { u2_lo_loop(); } // do it in the app
+    else                                              { fprintf(stderr, "unsupported admin mode command %s\n", u2_Host.ops_u.adm_c); exit(1); }
   } else {
     u2_lo_loop();
   }

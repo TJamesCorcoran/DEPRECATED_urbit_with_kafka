@@ -25,3 +25,9 @@ void u2_kafk_shutdown(void);
 // admin
 void u2_kafka_admin_kafka_to_egz();
 void u2_kafka_admin_egz_to_kafka();
+
+// for devel / speed characterization purposes only
+typedef void (*kafk_cb_cb_t)(c3_d kafk_off_d, c3_d seq_d, c3_y msg_type_y);
+
+
+void u2_kafk_set_cb_cb(kafk_cb_cb_t kafk_cb_cb);

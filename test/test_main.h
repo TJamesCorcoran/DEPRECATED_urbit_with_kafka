@@ -33,7 +33,7 @@ void setup_loop();
 // kafka
 void test_kafka_logging_bytes();
 void test_kafka_logging_ova_w();
-void test_kafka_logging_ova_r(uv_timer_t* handle, int status);
+void test_kafka_logging_ova_r(uv_timer_t* handle);
 void test_kafka_logging_ova_setup();
 
 

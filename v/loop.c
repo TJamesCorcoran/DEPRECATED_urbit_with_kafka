@@ -652,15 +652,16 @@ u2_lo_loop()
   // set up libuv watchers
   _lo_init();
 
-  // set up arvo processing (timeout clock, etc.)
-  u2_raft_init();
-
   // set up logging
   if(u2_Host.ops_u.kaf_c){
     u2_kafk_init();
   } else {
     u2_egz_init();
   }
+
+  // set up arvo processing (timeout clock, etc.)
+  u2_raft_init();
+
 
   // head into event loop
   if ( u2_no == u2_Host.ops_u.bat ) {
